@@ -179,11 +179,27 @@ static bool isKeyHelp(char c) {
 static char cmd0 = '\0';
 static char cmd1 = '\0';
 
+bool allColorKings() {
+    for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
+        struct Card *pCard = topCard(&colStacks[cc]);
+        if (!pCard || pCard->m_type != ct_king) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 void displayColors() {
     printf("colors\n");
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
         printf(" %c:", 'A'+cc);
-        printTop(&colStacks[cc]);
+        if (!allColorKings()) {
+            printTop(&colStacks[cc]);
+        } else {
+            printStack(&colStacks[cc]);
+            printf("\n");
+        }
         if (cmd0 == 'a'+cc) {
             printf("<-");
         }
@@ -246,17 +262,6 @@ void displayAll() {
     }
 
     printf("%s\n", Message);
-}
-
-
-bool allColorKings() {
-    for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
-        struct Card *pCard = topCard(&colStacks[cc]);
-        if (!pCard || pCard->m_type != ct_king) {
-            return false;
-        }
-    }
-    return true;
 }
 
 
