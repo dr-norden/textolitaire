@@ -27,7 +27,12 @@
 *.i*86
 *.x86_64
 *.hex
+sol
 
 # Debug files
 *.dSYM/
 *.su
+
+# Vim files
+*.swp
+*.swo
