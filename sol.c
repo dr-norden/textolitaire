@@ -112,8 +112,8 @@ bool moveInDeck(int srcNum, int tgtNum) {
     for (i = 0; i < pSource->m_size; i++) {
         pSrcCard = &pSource->m_cards[i];
         if (!pSrcCard->m_down && (
-            (pTgtCard && oneLess(*pSrcCard, *pTgtCard) && oppositeColor(*pSrcCard, *pTgtCard) ||
-            (!pTgtCard && pSrcCard->m_type == ct_king)))) {
+            (pTgtCard && oneLess(*pSrcCard, *pTgtCard) && oppositeColor(*pSrcCard, *pTgtCard)) ||
+            (!pTgtCard && pSrcCard->m_type == ct_king))) {
             break;    // got it
         }
         pSrcCard = NULL;
@@ -265,7 +265,7 @@ void displayAll() {
 }
 
 
-int main(int argc, const char**argv) {
+int main(int argc, const char **argv) {
     bool toExit = false;
     bool rv = true;
     struct Card *pCard = NULL;
@@ -328,7 +328,7 @@ int main(int argc, const char**argv) {
                         rv = moveInDeck(cmd0-'i', cmd1-'i');
                     }
                 } else {
-                    rv == cmd0 == cmd1;
+                    rv = cmd0 == cmd1;
                 }
             } else if (isKeyCol(cmd0)) {
                 pCard = topCard(&colStacks[cmd0-'a']);
