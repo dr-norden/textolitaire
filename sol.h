@@ -116,18 +116,18 @@ const char * colorMark(struct Card card) {
 
 void printCard(struct Card card) {
     if (card.m_down) {
-        printf(Schemes[ColorIdx].m_back);
+        printf("%s", Schemes[ColorIdx].m_back);
         if (!HackerMode) {
             printf("[??]");
         } else {
             printf("{%s%s}", typeMark(card), colorMark(card));
         }
-        printf(Schemes[ColorIdx].m_normal);
+        printf("%s", Schemes[ColorIdx].m_normal);
     } else {
-        printf(isRed(card) ? Schemes[ColorIdx].m_red
-                           : Schemes[ColorIdx].m_black);
+        printf("%s", isRed(card) ? Schemes[ColorIdx].m_red
+                                 : Schemes[ColorIdx].m_black);
         printf("[%s%s]", typeMark(card), colorMark(card));
-        printf(Schemes[ColorIdx].m_normal);
+        printf("%s", Schemes[ColorIdx].m_normal);
     }
 }
 
