@@ -13,7 +13,13 @@ struct SolStack colStacks[cc_diamonds+1];
 bool ShowHelp = false;
 const char * Message = "Press h for help";
 
+static char cmd0 = '\0';
+static char cmd1 = '\0';
+
 void initialize() {
+    cmd0 = '\0';
+    cmd1 = '\0';
+
     initStack(&pack);
     initStack(&qack);
     initStacks(stacks, STACKS);
@@ -179,9 +185,6 @@ static bool isKeyHelp(char c) {
 static bool isKeyRestart(char c) {
     return c == 'r';
 }
-
-static char cmd0 = '\0';
-static char cmd1 = '\0';
 
 bool allColorKings() {
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
