@@ -176,6 +176,10 @@ static bool isKeyHelp(char c) {
     return c == 'h' || c == '?' || c == '/';
 }
 
+static bool isKeyRestart(char c) {
+    return c == 'r';
+}
+
 static char cmd0 = '\0';
 static char cmd1 = '\0';
 
@@ -237,14 +241,15 @@ void displayDesk() {
 
 void displayHelp() {
     printf("help");
-    printf("\n P or enter .. current card from the pack");
-    printf("\n A-D        .. color stack A-D");
-    printf("\n I-O        .. desk stack I-O");
-    printf("\n T          .. move to color stack");
-    printf("\n double key .. move to color stack or cancel action");
     printf("\n space      .. draw next card");
+    printf("\n double key .. move to color stack or cancel action");
+    printf("\n P or enter .. choose current card from the pack");
+    printf("\n A-D        .. choose color stack A-D");
+    printf("\n I-O        .. chose desk stack I-O");
+    printf("\n T          .. move to color stack");
     printf("\n H or ?     .. show/hide help");
-    printf("\n Q          .. exit");
+    printf("\n R          .. restart game");
+    printf("\n Q          .. quit game");
     printf("\n\n");
 }
 
@@ -291,6 +296,8 @@ int main(int argc, const char **argv) {
 
             if (isKeyExit(cmd0)) {
                 toExit = true;
+            } else if (isKeyRestart(cmd0)) {
+                initialize();
             } else if (isKeyNext(cmd0)) {
                 nextCard();
             } else if (isKeyHelp(cmd0)) {
