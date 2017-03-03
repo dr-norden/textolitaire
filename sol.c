@@ -186,6 +186,10 @@ static bool isKeyRestart(char c) {
     return c == 'r';
 }
 
+static bool isKeyColorScheme(char c) {
+    return c == 's';
+}
+
 bool allColorKings() {
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
         struct Card *pCard = topCard(&colStacks[cc]);
@@ -251,6 +255,7 @@ void displayHelp() {
     printf("\n I-O        .. chose desk stack I-O");
     printf("\n T          .. move to color stack");
     printf("\n H or ?     .. show/hide help");
+    printf("\n S          .. change text color scheme");
     printf("\n R          .. restart game");
     printf("\n Q          .. quit game");
     printf("\n\n");
@@ -307,6 +312,8 @@ int main(int argc, const char **argv) {
                 initialize();
             } else if (isKeyNext(cmd0)) {
                 nextCard();
+            } else if (isKeyColorScheme(cmd0)) {
+                ColorIdx = (ColorIdx+1) % COLOR_SCHEMES;
             } else if (isKeyHelp(cmd0)) {
                 ShowHelp = !ShowHelp;
             } else if (cmd0 == '+') {

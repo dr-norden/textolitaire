@@ -16,7 +16,23 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 
+#define COLOR_SCHEMES 3
 
+struct ColorScheme {
+    const char *m_normal;
+    const char *m_red;
+    const char *m_black;
+    const char *m_back;
+};
+
+
+static const struct ColorScheme Schemes[COLOR_SCHEMES] = {
+    { KNRM, KRED, KBLU, KWHT },
+    { KNRM, KRED, KCYN, KYEL },
+    { KNRM, KRED, KGRN, KBLU }
+};
+
+static int ColorIdx = 0;
 static bool HackerMode = false;
 
 enum CardType {
@@ -100,17 +116,18 @@ const char * colorMark(struct Card card) {
 
 void printCard(struct Card card) {
     if (card.m_down) {
-        printf(KWHT);
+        printf(Schemes[ColorIdx].m_back);
         if (!HackerMode) {
             printf("[??]");
         } else {
             printf("{%s%s}", typeMark(card), colorMark(card));
         }
-        printf(KNRM);
+        printf(Schemes[ColorIdx].m_normal);
     } else {
-        printf(isRed(card)?KRED:KBLU);
+        printf(isRed(card) ? Schemes[ColorIdx].m_red
+                           : Schemes[ColorIdx].m_black);
         printf("[%s%s]", typeMark(card), colorMark(card));
-        printf(KNRM);
+        printf(Schemes[ColorIdx].m_normal);
     }
 }
 
