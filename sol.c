@@ -282,9 +282,13 @@ int main(int argc, const char **argv) {
 
         if (allColorKings()) {
             printf("CONGRATULATIONS, YOU HAVE WON!!!\n");
-            getch();
-            toExit = true;
-            break;
+            cmd0 = getch();
+            if (isKeyExit(cmd0)) {
+                break;
+            } else {
+                initialize();
+                continue;
+            }
         }
 
         Message = "";
