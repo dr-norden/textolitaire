@@ -1,10 +1,25 @@
 CC = gcc
 CFLAGS = -std=c11 -Wall
+TARGET=sol
+MODULES=getche.o card.o solstack.o controls.o display.o table.o sol.o
 
-all: sol
+all: $(TARGET)
 
-sol: sol.c sol.h getche.h
-	$(CC) $(CFLAGS) $< -o $@
+%.o: %.c %.h
+	@echo "[CC] $@ $<"
+	@ $(CC) $(CFLAGS) -c $< -o $@
 
-run:: sol
+$(TARGET): $(MODULES)
+	@echo "[LD] $@ $^"
+	@ $(CC) $^ -o $@
+
+run:: $(TARGET)
 	./$<
+
+clean::
+	@echo "[RM] $(TARGET) $(MODULES)"
+	@ rm -f $(TARGET) $(MODULES)
+
+again::
+	@ $(MAKE) clean
+	@ $(MAKE)
