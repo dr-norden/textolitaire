@@ -75,7 +75,6 @@ const char * getHelp() {
         " P or enter .. choose current card from the pack\n"
         " A-D        .. choose color stack A-D\n"
         " I-O        .. chose desk stack I-O\n"
-        " T          .. move to color stack\n"
         " H or ?     .. show/hide help\n"
         " S          .. change text color scheme\n"
         " R          .. restart game\n"
