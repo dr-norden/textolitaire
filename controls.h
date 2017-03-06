@@ -23,7 +23,8 @@ enum Command {
     cmd_desk3,      // select desk stack 3
     cmd_desk4,      // select desk stack 4
     cmd_desk5,      // select desk stack 5
-    cmd_desk6       // select desk stack 6
+    cmd_desk6,      // select desk stack 6
+    cmd_hack        // super secret key
 };
 
 /* Initialize keyboard controls */

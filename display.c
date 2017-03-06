@@ -142,7 +142,7 @@ bool controlDisplay(enum Command cmd) {
         ShowHelp = !ShowHelp;
         return true;
 
-    } else if (cmd == '+') {    // super secret key
+    } else if (cmd == cmd_hack) {
         HackerMode = !HackerMode;
         return true;
     }

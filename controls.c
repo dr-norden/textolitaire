@@ -1,6 +1,6 @@
 #include "controls.h"
 
-#define KEYS 18
+#define KEYS 19
 
 static char DefaultKeys[KEYS];
 static char SecondaryKeys[KEYS];
@@ -24,6 +24,7 @@ void initControls() {
     DefaultKeys[cmd_desk4]  = 'm';
     DefaultKeys[cmd_desk5]  = 'n';
     DefaultKeys[cmd_desk6]  = 'o';
+    DefaultKeys[cmd_hack]   = '+';
 
     SecondaryKeys[cmd_none]     = DefaultKeys[cmd_none];
     SecondaryKeys[cmd_exit]     = 'x';
@@ -43,11 +44,12 @@ void initControls() {
     SecondaryKeys[cmd_desk4]    = DefaultKeys[cmd_desk4];
     SecondaryKeys[cmd_desk5]    = DefaultKeys[cmd_desk5];
     SecondaryKeys[cmd_desk6]    = DefaultKeys[cmd_desk6];
+    SecondaryKeys[cmd_hack]     = DefaultKeys[cmd_hack];
 }
 
 
 enum Command keyToCmd(char c) {
-    for (enum Command cmd = cmd_none; cmd <= cmd_desk6; cmd++) {
+    for (enum Command cmd = cmd_none; cmd <= cmd_hack; cmd++) {
         if (DefaultKeys[cmd] == c || SecondaryKeys[cmd] == c) {
             return cmd;
         }
