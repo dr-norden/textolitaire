@@ -26,7 +26,7 @@ struct ColorScheme {
 };
 
 /* Visualize all game vitals on the stdout */
-void displayAll(enum Command actCmd);
+void displayAll();
 
 
 /* Set the status/error message to display */
@@ -41,7 +41,7 @@ void printCard(struct Card card);
 void printStack(struct SolStack *pStack);
 
 
-/* Print the top card of the stack or some text representation of empty stack 
+/* Print the top card of the stack or some text representation of empty stack
  * to stdout.
  */
 void printTop(struct SolStack *pStack);

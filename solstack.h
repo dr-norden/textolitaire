@@ -55,7 +55,7 @@ struct Card * popStack(struct SolStack *pStack, struct Card *pCard);
 
 
 /* Move top card from source stack to target stack. Turn the new top card
- * on the source stack facing up. Returns new top card from the target stack 
+ * on the source stack facing up. Returns new top card from the target stack
  * or NULL if the operation was not successful.
  */
 struct Card * moveCard(struct SolStack *pSource, struct SolStack *pTarget);

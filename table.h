@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "solstack.h"
+#include "controls.h"
 
 #define CARDS 52
 #define STACKS 7
@@ -12,30 +13,38 @@
 void initTable();
 
 /* Return true, if there's a winning combination on the table,
- * i.e. if there's a king on top of each color stack. 
+ * i.e. if there's a king on top of each color stack.
  */
 bool isVictory();
+
+/* Change table properties based on the command from the keyboard.
+ * Return true if an action has been taken.
+ */
+bool controlTable(enum Command cmd);
+
+/* Return table command that's waiting for completion */
+enum Command getActiveCmd();
 
 /* Draw next card from the pack */
 void nextCard();
 
 /* Move top of the pack into color stack if possible.
- * Return true on success. 
+ * Return true on success.
  */
 bool movePackToColors();
 
 /* Move top of the pack into given desk stack if possible.
- * Return true on success. 
+ * Return true on success.
  */
 bool movePackToDesk(int stackNum);
 
 /* Move top of given desk stack into color stack if possible.
- * Return true on success. 
+ * Return true on success.
  */
 bool moveDeskToColors(int stackNum);
 
 /* Move top of given color stack into given desk stack if possible.
- * Return true on success. 
+ * Return true on success.
  */
 bool moveColorsToDesk(int srcNum, int tgtNum);
 

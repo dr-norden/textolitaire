@@ -1,15 +1,18 @@
 #include "table.h"
+#include "display.h"
 
-struct SolStack pack;
-struct SolStack rest;
-struct SolStack stacks[STACKS];
-struct SolStack colStacks[cc_diamonds+1];
+static struct SolStack pack;
+static struct SolStack rest;
+static struct SolStack stacks[STACKS];
+static struct SolStack colStacks[cc_diamonds+1];
+static enum Command activeCmd = cmd_none;
 
 void initTable() {
     initFullStack(&pack);
     initStack(&rest);
     initStacks(stacks, STACKS);
     initStacks(colStacks, COLORS);
+    activeCmd = cmd_none;
 
     // draw cards from the pack into desk
     for (int i = 0; i < 7; i++) {
@@ -20,6 +23,11 @@ void initTable() {
         }
         topCard(&stacks[i])->m_down = false;
     }
+}
+
+
+enum Command getActiveCmd() {
+    return activeCmd;
 }
 
 
@@ -38,7 +46,7 @@ void nextCard() {
 
 
 /* Move top of given stack into color stack if possible
- * Return true on success. 
+ * Return true on success.
  */
 bool moveToColors(struct SolStack *pSource) {
     struct Card *pSrcCard = topCard(pSource);
@@ -142,6 +150,60 @@ bool isVictory() {
     }
     return true;
 }
+
+
+bool controlTable(enum Command cmd) {
+    if (activeCmd == cmd_none) {
+        if (cmd == cmd_next) {
+            nextCard();
+        } else if (cmd == cmd_pack || isCmdDesk(cmd) || isCmdColor(cmd)) {
+            // want one more key to complete action
+            activeCmd = cmd;
+        } else {
+            return false;
+        }
+        return true;
+
+    } else {
+        bool rv = false;
+
+        if (isCmdColor(cmd) || cmd == activeCmd) {
+            // move up or cancel action
+            if (cmd_pack == activeCmd) {
+                rv = movePackToColors();
+            } else if (isCmdDesk(activeCmd)) {
+                rv = moveDeskToColors(activeCmd - cmd_desk0);
+            } else {
+                rv = false;
+            }
+            rv = rv || activeCmd == cmd;
+
+        } else if (isCmdDesk(cmd)) {
+            // move to desk
+            if (cmd_pack == activeCmd) {
+                rv = movePackToDesk(cmd-cmd_desk0);
+            } else if (isCmdDesk(activeCmd)) {
+                rv = moveDeskToDesk(activeCmd - cmd_desk0, cmd - cmd_desk0);
+            } else if (isCmdColor(activeCmd)) {
+                rv = moveColorsToDesk(activeCmd - cmd_color0, cmd - cmd_desk0);
+            }
+        } else if (cmd_pack == cmd) {
+            rv = false;
+        } else {
+            // unknown key
+            activeCmd = cmd_none;
+            return false;
+        }
+
+        if (!rv) {
+            setMessage("!! Invalid move");
+        }
+
+        activeCmd = cmd_none;
+        return true;
+    }
+}
+
 
 struct SolStack * getPack() {
     return &pack;

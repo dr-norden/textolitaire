@@ -55,8 +55,9 @@ void printTop(struct SolStack *pStack) {
 }
 
 
-void displayColors(enum Command actCmd) {
+void displayColors() {
     struct SolStack *colStacks = getColStacks();
+    enum Command actCmd = getActiveCmd();
 
     printf("colors\n");
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
@@ -75,9 +76,10 @@ void displayColors(enum Command actCmd) {
 }
 
 
-void displayPack(enum Command actCmd) {
+void displayPack() {
     struct SolStack *pPack = getPack();
     struct SolStack *pRest = getRest();
+    enum Command actCmd = getActiveCmd();
 
     printf("pack\n");
     printf(" P:");
@@ -91,8 +93,9 @@ void displayPack(enum Command actCmd) {
 }
 
 
-void displayDesk(enum Command actCmd) {
+void displayDesk() {
     struct SolStack *deskStacks = getDeskStacks();
+    enum Command actCmd = getActiveCmd();
 
     printf("desk\n");
     for (int i = 0; i < STACKS; i++) {
@@ -114,15 +117,15 @@ void displayHelp() {
 }
 
 
-void displayAll(enum Command actCmd) {
+void displayAll() {
 
     printf("\033[2J\033[1;1H"); // reset screen
     printf("%s", Schemes[ColorIdx].m_normal);
     printf("TEXTOLITAIRE\n\n");
 
-    displayColors(actCmd);
-    displayPack(actCmd);
-    displayDesk(actCmd);
+    displayColors();
+    displayPack();
+    displayDesk();
 
     if (ShowHelp) {
         displayHelp();
