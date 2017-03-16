@@ -34,6 +34,7 @@ enum Command getActiveCmd() {
 void nextCard() {
     struct Card card;
     if (popStack(&pack, &card) != NULL) {
+        topDown(&rest);
         card.m_down = false;
         pushStack(&rest, card);
     } else {

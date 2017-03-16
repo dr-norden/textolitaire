@@ -65,5 +65,9 @@ struct Card * moveCard(struct SolStack *pSource, struct SolStack *pTarget);
 void topUp(struct SolStack *pStack);
 
 
+/* Turn the top card of the stack facing down */
+void topDown(struct SolStack *pStack);
+
+
 
 #endif

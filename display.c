@@ -40,6 +40,9 @@ void printCard(struct Card card) {
 
 
 void printStack(struct SolStack *pStack) {
+    if (pStack->m_size == 0) {
+        printf("___ ");
+    }
     for (int i = 0; i < pStack->m_size; i++) {
         printCard(pStack->m_cards[i]);
     }
@@ -83,8 +86,15 @@ void displayPack() {
 
     printf("pack\n");
     printf(" P:");
-    printTop(pPack);
-    printTop(pRest);
+    if (HackerMode) {
+        printStack(pPack);
+        printf(" : ");
+        printStack(pRest);
+    } else {
+        printTop(pPack);
+        printTop(pRest);
+    }
+
     if (actCmd == cmd_pack) {
         printf("<-");
     }

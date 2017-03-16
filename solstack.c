@@ -68,6 +68,13 @@ void topUp(struct SolStack *pStack) {
 }
 
 
+void topDown(struct SolStack *pStack) {
+    if (topCard(pStack) != NULL) {
+        topCard(pStack)->m_down = true;
+    }
+}
+
+
 void shuffleStack(struct SolStack *pStack) {
     if (pStack) {
         srand(time(NULL));
