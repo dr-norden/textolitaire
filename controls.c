@@ -1,50 +1,60 @@
+#include "config.h"
 #include "controls.h"
+#include <ctype.h>
+#include <string.h>
+#include <stdio.h>
 
 #define KEYS 19
 
 static char DefaultKeys[KEYS];
 static char SecondaryKeys[KEYS];
+static char Help[1024];
+
+/* Generate help string from initialized controls */
+static void generateHelp();
 
 void initControls() {
     DefaultKeys[cmd_none]   = '\0';
-    DefaultKeys[cmd_exit]   = 'q';
-    DefaultKeys[cmd_reset]  = 'r';
-    DefaultKeys[cmd_help]   = 'h';
-    DefaultKeys[cmd_scheme] = 's';
-    DefaultKeys[cmd_next]   = ' ';
-    DefaultKeys[cmd_pack]   = 'p';
-    DefaultKeys[cmd_color0] = 'a';
-    DefaultKeys[cmd_color1] = 'b';
-    DefaultKeys[cmd_color2] = 'c';
-    DefaultKeys[cmd_color3] = 'd';
-    DefaultKeys[cmd_desk0]  = 'i';
-    DefaultKeys[cmd_desk1]  = 'j';
-    DefaultKeys[cmd_desk2]  = 'k';
-    DefaultKeys[cmd_desk3]  = 'l';
-    DefaultKeys[cmd_desk4]  = 'm';
-    DefaultKeys[cmd_desk5]  = 'n';
-    DefaultKeys[cmd_desk6]  = 'o';
+    DefaultKeys[cmd_exit]   = CMD_PRI_EXIT_GAME;
+    DefaultKeys[cmd_reset]  = CMD_PRI_NEW_GAME;
+    DefaultKeys[cmd_help]   = CMD_PRI_SHOW_HELP;
+    DefaultKeys[cmd_scheme] = CMD_PRI_CHANGE_SCHEME;
+    DefaultKeys[cmd_next]   = CMD_PRI_NEXT_CARD;
+    DefaultKeys[cmd_pack]   = CMD_PRI_SELECT_PACK;
+    DefaultKeys[cmd_color0] = CMD_PRI_SELECT_COLOR1;
+    DefaultKeys[cmd_color1] = CMD_PRI_SELECT_COLOR2;
+    DefaultKeys[cmd_color2] = CMD_PRI_SELECT_COLOR3;
+    DefaultKeys[cmd_color3] = CMD_PRI_SELECT_COLOR4;
+    DefaultKeys[cmd_desk0]  = CMD_PRI_SELECT_DESK1;
+    DefaultKeys[cmd_desk1]  = CMD_PRI_SELECT_DESK2;
+    DefaultKeys[cmd_desk2]  = CMD_PRI_SELECT_DESK3;
+    DefaultKeys[cmd_desk3]  = CMD_PRI_SELECT_DESK4;
+    DefaultKeys[cmd_desk4]  = CMD_PRI_SELECT_DESK5;
+    DefaultKeys[cmd_desk5]  = CMD_PRI_SELECT_DESK6;
+    DefaultKeys[cmd_desk6]  = CMD_PRI_SELECT_DESK7;
     DefaultKeys[cmd_hack]   = '+';
 
-    SecondaryKeys[cmd_none]     = DefaultKeys[cmd_none];
-    SecondaryKeys[cmd_exit]     = 'x';
-    SecondaryKeys[cmd_reset]    = DefaultKeys[cmd_reset];
-    SecondaryKeys[cmd_help]     = '/';
-    SecondaryKeys[cmd_scheme]   = DefaultKeys[cmd_scheme];
-    SecondaryKeys[cmd_next]     = DefaultKeys[cmd_next];
-    SecondaryKeys[cmd_pack]     = '\n';
-    SecondaryKeys[cmd_color0]   = DefaultKeys[cmd_color0];
-    SecondaryKeys[cmd_color1]   = DefaultKeys[cmd_color1];
-    SecondaryKeys[cmd_color2]   = DefaultKeys[cmd_color2];
-    SecondaryKeys[cmd_color3]   = DefaultKeys[cmd_color3];
-    SecondaryKeys[cmd_desk0]    = DefaultKeys[cmd_desk0];
-    SecondaryKeys[cmd_desk1]    = DefaultKeys[cmd_desk1];
-    SecondaryKeys[cmd_desk2]    = DefaultKeys[cmd_desk2];
-    SecondaryKeys[cmd_desk3]    = DefaultKeys[cmd_desk3];
-    SecondaryKeys[cmd_desk4]    = DefaultKeys[cmd_desk4];
-    SecondaryKeys[cmd_desk5]    = DefaultKeys[cmd_desk5];
-    SecondaryKeys[cmd_desk6]    = DefaultKeys[cmd_desk6];
-    SecondaryKeys[cmd_hack]     = DefaultKeys[cmd_hack];
+    SecondaryKeys[cmd_none]   = '\0';
+    SecondaryKeys[cmd_exit]   = CMD_SEC_EXIT_GAME;
+    SecondaryKeys[cmd_reset]  = CMD_SEC_NEW_GAME;
+    SecondaryKeys[cmd_help]   = CMD_SEC_SHOW_HELP;
+    SecondaryKeys[cmd_scheme] = CMD_SEC_CHANGE_SCHEME;
+    SecondaryKeys[cmd_next]   = CMD_SEC_NEXT_CARD;
+    SecondaryKeys[cmd_pack]   = CMD_SEC_SELECT_PACK;
+    SecondaryKeys[cmd_color0] = CMD_SEC_SELECT_COLOR1;
+    SecondaryKeys[cmd_color1] = CMD_SEC_SELECT_COLOR2;
+    SecondaryKeys[cmd_color2] = CMD_SEC_SELECT_COLOR3;
+    SecondaryKeys[cmd_color3] = CMD_SEC_SELECT_COLOR4;
+    SecondaryKeys[cmd_desk0]  = CMD_SEC_SELECT_DESK1;
+    SecondaryKeys[cmd_desk1]  = CMD_SEC_SELECT_DESK2;
+    SecondaryKeys[cmd_desk2]  = CMD_SEC_SELECT_DESK3;
+    SecondaryKeys[cmd_desk3]  = CMD_SEC_SELECT_DESK4;
+    SecondaryKeys[cmd_desk4]  = CMD_SEC_SELECT_DESK5;
+    SecondaryKeys[cmd_desk5]  = CMD_SEC_SELECT_DESK6;
+    SecondaryKeys[cmd_desk6]  = CMD_SEC_SELECT_DESK7;
+    SecondaryKeys[cmd_hack]   = '+';
+
+    generateHelp();
 }
 
 
@@ -67,19 +77,61 @@ bool isCmdColor(enum Command cmd) {
     return cmd >= cmd_color0 && cmd <= cmd_color3;
 }
 
+char getCmdKey(enum Command cmd) {
+    return DefaultKeys[cmd];
+}
+
+
+void formatKey(char *buffer, char key) {
+    switch (key) {
+        case ' ':    sprintf(buffer, "space"); break;
+        case '\n':   sprintf(buffer, "enter"); break;
+        case '\b':   sprintf(buffer, "bkspc"); break;
+        case '\t':   sprintf(buffer, "tab");   break;
+        case '\x1B': sprintf(buffer, "esc");   break;
+        case '\x7f': sprintf(buffer, "del");   break;
+        default: sprintf(buffer, "%c", toupper(key)); break;
+    }
+}
+
+
+void formatCmdHelp(char *buffer, enum Command cmd, const char *description) {
+    char keyBuf[20];
+    formatKey(keyBuf, DefaultKeys[cmd]);
+
+    if (DefaultKeys[cmd] != SecondaryKeys[cmd]) {
+        char keyBuf2[10];
+        formatKey(keyBuf2, SecondaryKeys[cmd]);
+        strcat(keyBuf, " or ");
+        strcat(keyBuf, keyBuf2);
+    }
+
+    sprintf(&buffer[strlen(buffer)], " %-10s .. %s\n", keyBuf, description);
+}
+
+void generateHelp() {
+    sprintf(Help, " double key .. move to color stack or cancel action\n");
+    formatCmdHelp(Help, cmd_next,   "draw next card");
+    formatCmdHelp(Help, cmd_pack,   "choose current card from the pack");
+    formatCmdHelp(Help, cmd_color0, "choose stack of spades");
+    formatCmdHelp(Help, cmd_color1, "choose stack of hearts");
+    formatCmdHelp(Help, cmd_color2, "choose stack of clubs");
+    formatCmdHelp(Help, cmd_color3, "choose stack of diamonds");
+    formatCmdHelp(Help, cmd_desk0,  "choose desk stack 1");
+    formatCmdHelp(Help, cmd_desk1,  "choose desk stack 2");
+    formatCmdHelp(Help, cmd_desk2,  "choose desk stack 3");
+    formatCmdHelp(Help, cmd_desk3,  "choose desk stack 4");
+    formatCmdHelp(Help, cmd_desk4,  "choose desk stack 5");
+    formatCmdHelp(Help, cmd_desk5,  "choose desk stack 6");
+    formatCmdHelp(Help, cmd_desk6,  "choose desk stack 7");
+    formatCmdHelp(Help, cmd_scheme, "change text color scheme");
+    formatCmdHelp(Help, cmd_help,   "show/hide help");
+    formatCmdHelp(Help, cmd_reset,  "restart game");
+    formatCmdHelp(Help, cmd_exit,   "quit game");
+}
 
 const char * getHelp() {
-    return
-        " space      .. draw next card\n"
-        " double key .. move to color stack or cancel action\n"
-        " P or enter .. choose current card from the pack\n"
-        " A-D        .. choose color stack A-D\n"
-        " I-O        .. chose desk stack I-O\n"
-        " H or ?     .. show/hide help\n"
-        " S          .. change text color scheme\n"
-        " R          .. restart game\n"
-        " Q          .. quit game\n"
-        ;
+    return Help;
 }
 
 

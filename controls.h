@@ -39,6 +39,9 @@ bool isCmdColor(enum Command cmd);
 /* Translate keyboard characted to command */
 enum Command keyToCmd(char key);
 
+/* Return default keyboard character for given command */
+char getCmdKey(enum Command cmd);
+
 /* Return help string for the game controls */
 const char * getHelp();
 

@@ -1,7 +1,9 @@
+#include "config.h"
 #include "display.h"
 #include "controls.h"
 #include "solstack.h"
 #include "table.h"
+#include <ctype.h>
 #include <stdio.h>
 
 static int ColorIdx = 0;
@@ -10,9 +12,9 @@ static bool ShowHelp = false;
 const char * Message = "Press h for help";
 
 static const struct ColorScheme Schemes[COLOR_SCHEMES] = {
-    { KNRM, KRED, KBLU, KWHT },
-    { KCYN, KRED, KNRM, KWHT },
-    { KNRM, KRED, KGRN, KBLU }
+    { SCHEME1_TXT, SCHEME1_RED, SCHEME1_BLK, SCHEME1_BCK },
+    { SCHEME2_TXT, SCHEME2_RED, SCHEME2_BLK, SCHEME2_BCK },
+    { SCHEME3_TXT, SCHEME3_RED, SCHEME3_BLK, SCHEME3_BCK }
 };
 
 
@@ -64,7 +66,7 @@ void displayColors() {
 
     printf("colors\n");
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
-        printf(" %c:", 'A'+cc);
+        printf(" %c:", toupper(getCmdKey(cmd_color0+cc)));
         if (!isVictory()) {
             printTop(&colStacks[cc]);
         } else {
@@ -85,7 +87,7 @@ void displayPack() {
     enum Command actCmd = getActiveCmd();
 
     printf("pack\n");
-    printf(" P:");
+    printf(" %c:", toupper(getCmdKey(cmd_pack)));
     if (HackerMode) {
         printStack(pPack);
         printf(" : ");
@@ -109,7 +111,7 @@ void displayDesk() {
 
     printf("desk\n");
     for (int i = 0; i < STACKS; i++) {
-        printf(" %c:", 'I'+i);
+        printf(" %c:", toupper(getCmdKey(cmd_desk0+i)));
         printStack(&deskStacks[i]);
         if (actCmd == cmd_desk0+i) {
             printf("<-");
