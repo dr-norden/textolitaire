@@ -6,6 +6,7 @@ static struct SolStack rest;
 static struct SolStack stacks[STACKS];
 static struct SolStack colStacks[cc_diamonds+1];
 static enum Command activeCmd = cmd_none;
+static int score = 0;
 
 void initTable() {
     initFullStack(&pack);
@@ -13,6 +14,7 @@ void initTable() {
     initStacks(stacks, STACKS);
     initStacks(colStacks, COLORS);
     activeCmd = cmd_none;
+    score = 0;
 
     // draw cards from the pack into desk
     for (int i = 0; i < 7; i++) {
@@ -31,6 +33,18 @@ enum Command getActiveCmd() {
 }
 
 
+int getScore() {
+    return score;
+}
+
+void updateScore(int num) {
+    score += num;
+    if (score < 0) {
+        score = 0;
+    }
+}
+
+
 void nextCard() {
     struct Card card;
     if (popStack(&pack, &card) != NULL) {
@@ -41,6 +55,7 @@ void nextCard() {
         while (popStack(&rest, &card) != NULL) {
             card.m_down = true;
             pushStack(&pack, card);
+            updateScore(-2);
         }
     }
 }
@@ -84,19 +99,35 @@ bool moveToDesk(struct SolStack *pSource, int stackNum) {
 }
 
 bool movePackToColors() {
-    return moveToColors(&rest);
+    if (moveToColors(&rest)) {
+        updateScore(10);
+        return true;
+    }
+    return false;
 }
 
 bool movePackToDesk(int stackNum) {
-    return moveToDesk(&rest, stackNum);
+    if (moveToDesk(&rest, stackNum)) {
+        updateScore(5);
+        return true;
+    }
+    return false;
 }
 
 bool moveDeskToColors(int stackNum) {
-    return moveToColors(&stacks[stackNum]);
+    if (moveToColors(&stacks[stackNum])) {
+        updateScore(10);
+        return true;
+    }
+    return false;
 }
 
 bool moveColorsToDesk(int srcNum, int tgtNum) {
-    return moveToDesk(&colStacks[srcNum], tgtNum);
+    if (moveToDesk(&colStacks[srcNum], tgtNum)) {
+        updateScore(-15);
+        return true;
+    }
+    return false;
 }
 
 

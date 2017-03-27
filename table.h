@@ -66,5 +66,8 @@ struct SolStack * getColStacks();
 /* Return the array of desk stacks */
 struct SolStack * getDeskStacks();
 
+/* Return game score */
+int getScore();
+
 
 #endif

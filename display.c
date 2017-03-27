@@ -122,6 +122,15 @@ void displayDesk() {
 }
 
 
+void displayStats() {
+    struct SolStack *pPack = getPack();
+    struct SolStack *pRest = getRest();
+    printf("remain (%ld)  draft (%ld)  score (%d)\n\n",
+                pPack->m_size,
+                pRest->m_size,
+                getScore());
+}
+
 void displayHelp() {
     printf("help\n");
     printf("%s", getHelp());
@@ -138,6 +147,7 @@ void displayAll() {
     displayColors();
     displayPack();
     displayDesk();
+    displayStats();
 
     if (ShowHelp) {
         displayHelp();
