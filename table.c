@@ -1,6 +1,8 @@
 #include "table.h"
 #include "display.h"
 
+#define MIN_SCORE -2000000
+
 static struct SolStack pack;
 static struct SolStack rest;
 static struct SolStack stacks[STACKS];
@@ -39,8 +41,8 @@ int getScore() {
 
 void updateScore(int num) {
     score += num;
-    if (score < 0) {
-        score = 0;
+    if (score < MIN_SCORE) {
+        score = MIN_SCORE;
     }
 }
 
