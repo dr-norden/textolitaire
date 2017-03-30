@@ -32,7 +32,7 @@
 #define SCHEME3_TXT  KNRM
 #define SCHEME3_RED  KRED
 #define SCHEME3_BLK  KGRN
-#define SCHEME3_BCK  KBLU
+#define SCHEME3_BCK  KCYN
 
 
 /* 

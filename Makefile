@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -std=c11 -Wall
 TARGET=sol
-MODULES=getche.o card.o solstack.o controls.o display.o table.o sol.o
+MODULES=getche.o card.o solstack.o controls.o display.o table.o sol.o diskdata.o
 
 all: $(TARGET)
 

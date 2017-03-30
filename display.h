@@ -15,6 +15,11 @@ struct ColorScheme {
     const char *m_back;
 };
 
+
+/* Initialize display variables. Should be called after initDiskData() */
+void initDisplay();
+
+
 /* Visualize all game vitals on the stdout */
 void displayAll();
 

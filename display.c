@@ -3,6 +3,7 @@
 #include "controls.h"
 #include "solstack.h"
 #include "table.h"
+#include "diskdata.h"
 #include <ctype.h>
 #include <stdio.h>
 
@@ -16,6 +17,11 @@ static const struct ColorScheme Schemes[COLOR_SCHEMES] = {
     { SCHEME2_TXT, SCHEME2_RED, SCHEME2_BLK, SCHEME2_BCK },
     { SCHEME3_TXT, SCHEME3_RED, SCHEME3_BLK, SCHEME3_BCK }
 };
+
+
+void initDisplay() {
+    ColorIdx = getColorSchemeIdx();
+}
 
 
 void setMessage(const char *message) {
@@ -125,10 +131,11 @@ void displayDesk() {
 void displayStats() {
     struct SolStack *pPack = getPack();
     struct SolStack *pRest = getRest();
-    printf("remain (%ld)  draft (%ld)  score (%d)\n\n",
+    printf("remain (%ld)  draft (%ld)  score (%d) record (%d)\n\n",
                 pPack->m_size,
                 pRest->m_size,
-                getScore());
+                getScore(),
+                getHiScore());
 }
 
 void displayHelp() {
@@ -161,6 +168,7 @@ void displayAll() {
 bool controlDisplay(enum Command cmd) {
     if (cmd == cmd_scheme) {
         ColorIdx = (ColorIdx+1) % COLOR_SCHEMES;
+        setColorSchemeIdx(ColorIdx);
         return true;
 
     } else if (cmd == cmd_help) {

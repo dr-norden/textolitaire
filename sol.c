@@ -1,6 +1,7 @@
 #include "sol.h"
 #include "getche.h"
 #include "display.h"
+#include "diskdata.h"
 #include "controls.h"
 #include "table.h"
 
@@ -9,6 +10,7 @@ static bool toExit = false;
 
 
 int main(int argc, const char **argv) {
+    initDiskData();
     initNewGame();
 
     while (!toExit) {
@@ -28,6 +30,9 @@ int main(int argc, const char **argv) {
             setMessage("!! Invalid key");
         }
     }
+
+    saveDiskData();
+
     return 0;
 }
 
@@ -36,6 +41,7 @@ void initNewGame() {
     toExit = false;
     initTable();
     initControls();
+    initDisplay();
 }
 
 
@@ -54,8 +60,22 @@ bool controlGame(enum Command cmd) {
 bool checkVictory() {
     if (isVictory()) {
         enum Command cmd;
-        setMessage("CONGRATULATIONS, YOU HAVE WON!!!");
+
+        int score = getScore();
+        if (score > getHiScore()) {
+            setMessage("CONGRATULATIONS, YOU HAVE WON WITH NEW TOP SCORE!!!");
+        } else {
+            setMessage("CONGRATULATIONS, YOU HAVE WON!!!");
+        }
+
         displayAll(cmd_none);
+
+        if (score > getHiScore()) {
+            setHiScore(score);
+        }
+
+        saveDiskData();
+
         cmd = keyToCmd(getch());
         if (cmd == cmd_exit) {
             toExit = true;
