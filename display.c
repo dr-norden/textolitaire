@@ -6,11 +6,31 @@
 #include "diskdata.h"
 #include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 
 static int ColorIdx = 0;
 static bool HackerMode = false;
 static bool ShowHelp = false;
 const char * Message = "Press h for help";
+
+#define CaWinSz 15
+const char * CaWin[CaWinSz] = {
+    "sA   2 c Q4  s7  3\n",
+    "s3   J cJ  K sQ  4\n",
+    "s Q 5  c9  2 s5  J\n",
+    "s  6   cQ  6 s8  K\n",
+    "s  7   c8  J sJ  3\n",
+    "s  K   c3  A sJ  6\n",
+    "s  8   c 57  s 9A \n",
+    "\n",
+    "hJ   Q 8 d3   A h0\n",
+    "h2   7 A d2   7 s0\n",
+    "hA   3 9 d86  K d0\n",
+    "h4 2 K 3 dJ 5 J c0\n",
+    "h7 6 8 Q d7  74 hA\n",
+    "hQ3 4J 7 d2   9  \n",
+    "h5   9 J dQ   6 cQ\n"
+};
 
 static const struct ColorScheme Schemes[COLOR_SCHEMES] = {
     { SCHEME1_TXT, SCHEME1_RED, SCHEME1_BLK, SCHEME1_BCK },
@@ -65,6 +85,40 @@ void printTop(struct SolStack *pStack) {
     }
 }
 
+/* Print card art based on given string */
+void cardArt(const char *str) {
+    const char *types = " A234567890JQK";
+    const char *colors = "shcd";
+    int len = 0;
+    struct Card card;
+    card.m_down = false;
+    card.m_color = cc_spades;
+
+    len = strlen(str);
+    for (int i = 0; i < len; i++) {
+        card.m_type = ct_none;
+        for (enum CardType ct = ct_ace; ct <= ct_king; ct++) {
+            if (types[ct] == str[i]) {
+                card.m_type = ct;
+                break;
+            }
+        }
+
+        if (card.m_type != ct_none) {
+            printCard(card);
+        } else if (str[i] == '\n') {
+            printf("\n");
+        } else if (strchr(colors, str[i]) != NULL) {
+            for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
+                if (colors[cc] == str[i]) {
+                    card.m_color = cc;
+                }
+            }
+        } else {
+            printf("    ");
+        }
+    }
+}
 
 void displayColors() {
     struct SolStack *colStacks = getColStacks();
@@ -145,19 +199,31 @@ void displayHelp() {
 }
 
 
-void displayAll() {
+void displayVictory() {
+    printf("\n");
+    for (int i = 0; i < CaWinSz; i++) {
+        cardArt(CaWin[i]);
+    }
+    printf("\n");
+}
 
+
+void displayAll() {
     printf("\033[2J\033[1;1H"); // reset screen
     printf("%s", Schemes[ColorIdx].m_normal);
     printf("TEXTOLITAIRE\n\n");
 
-    displayColors();
-    displayPack();
-    displayDesk();
-    displayStats();
+    if (isVictory()) {
+        displayVictory();
+    } else {
+        displayColors();
+        displayPack();
+        displayDesk();
+        displayStats();
 
-    if (ShowHelp) {
-        displayHelp();
+        if (ShowHelp) {
+            displayHelp();
+        }
     }
 
     printf("%s\n", Message);
@@ -182,3 +248,5 @@ bool controlDisplay(enum Command cmd) {
 
     return false;
 }
+
+
