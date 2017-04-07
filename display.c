@@ -128,7 +128,6 @@ void displayColors() {
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
         printf(" %c:", toupper(getCmdKey(cmd_color0+cc)));
         printTop(&colStacks[cc]);
-        printf("\n");
         if (actCmd == cmd_color0+cc) {
             printf("<-");
         }
