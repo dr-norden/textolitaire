@@ -127,12 +127,9 @@ void displayColors() {
     printf("colors\n");
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
         printf(" %c:", toupper(getCmdKey(cmd_color0+cc)));
-        if (!isVictory()) {
-            printTop(&colStacks[cc]);
-        } else {
-            printStack(&colStacks[cc]);
-            printf("\n");
-        }
+        printTop(&colStacks[cc]);
+        printStack(&colStacks[cc]);
+        printf("\n");
         if (actCmd == cmd_color0+cc) {
             printf("<-");
         }
@@ -215,6 +212,7 @@ void displayAll() {
 
     if (isVictory()) {
         displayVictory();
+        displayStats();
     } else {
         displayColors();
         displayPack();
