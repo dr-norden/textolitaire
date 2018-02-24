@@ -1,5 +1,6 @@
 #include "table.h"
 #include "display.h"
+#include <unistd.h>
 
 #define MIN_SCORE -2000000
 
@@ -39,7 +40,7 @@ int getScore() {
     return score;
 }
 
-void updateScore(int num) {
+static void updateScore(int num) {
     score += num;
     if (score < MIN_SCORE) {
         score = MIN_SCORE;
@@ -63,19 +64,40 @@ void nextCard() {
 }
 
 
+
+/* Return true if the card can be moved on top of given desk stack. */
+static bool isCardMovableToDesk(struct Card card, struct SolStack *pStack) {
+    if (pStack) {
+        struct Card *pTopCard = topCard(pStack);
+        if (pTopCard) {
+            return (oneLess(card, *pTopCard) && oppositeColor(card, *pTopCard));
+        } else {
+            return (card.m_type == ct_king);
+        }
+    }
+    return false;
+}
+
+/* Return true if the card can be moved on top of its color stack */
+static bool isCardMovableToColors(struct Card card) {
+    struct SolStack *pTarget = &colStacks[card.m_color];
+    struct Card *pTopCard = topCard(pTarget);
+
+    if (pTopCard) {
+        return oneLess(*pTopCard, card);
+    } else {
+        return (card.m_type == ct_ace);
+    }
+}
+
 /* Move top of given stack into color stack if possible
  * Return true on success.
  */
-bool moveToColors(struct SolStack *pSource) {
+static bool moveToColors(struct SolStack *pSource) {
     struct Card *pSrcCard = topCard(pSource);
 
-    if (pSrcCard) {
-        struct SolStack *pTarget = &colStacks[pSrcCard->m_color];
-        struct Card *pTgtCard = topCard(pTarget);
-        if ((pTgtCard && oneLess(*pTgtCard, *pSrcCard)) ||
-            (!pTgtCard && pSrcCard->m_type == ct_ace)) {
-            return moveCard(pSource, pTarget);
-        }
+    if (pSrcCard && isCardMovableToColors(*pSrcCard)) {
+        return moveCard(pSource, &colStacks[pSrcCard->m_color]);
     }
 
     return false;
@@ -85,16 +107,12 @@ bool moveToColors(struct SolStack *pSource) {
 /* Move top of given stack into desk stack with given number if possible.
  * Return true on success.
  */
-bool moveToDesk(struct SolStack *pSource, int stackNum) {
+static bool moveToDesk(struct SolStack *pSource, int stackNum) {
     struct Card *pSrcCard = topCard(pSource);
+    struct SolStack *pTarget = &stacks[stackNum];
 
-    if (pSrcCard) {
-        struct SolStack *pTarget = &stacks[stackNum];
-        struct Card *pTgtCard = topCard(pTarget);
-        if ((!pTgtCard && pSrcCard->m_type == ct_king) ||
-            (pTgtCard && oneLess(*pSrcCard, *pTgtCard) && oppositeColor(*pSrcCard, *pTgtCard))) {
-            return moveCard(pSource, pTarget);
-        }
+    if (pSrcCard && isCardMovableToDesk(*pSrcCard, pTarget)) {
+        return moveCard(pSource, pTarget);
     }
 
     return false;
@@ -132,31 +150,52 @@ bool moveColorsToDesk(int srcNum, int tgtNum) {
     return false;
 }
 
-
-bool moveDeskToDesk(int srcNum, int tgtNum) {
+/* Move chain of cards from one desk stack to another if possible.
+ * If revealOnly is set to true, it only allows moves that reveal
+ * a new card or vacate an empty space.
+ * Return true on success.
+ */
+static bool moveDeskToDesk3(int srcNum, int tgtNum, bool revealOnly) {
     struct SolStack *pSource = &stacks[srcNum];
     struct SolStack *pTarget = &stacks[tgtNum];
     struct SolStack helpStack;
     struct Card helpCard;
-    struct Card *pTgtCard = topCard(pTarget);
     struct Card *pSrcCard = NULL;
     int i;
 
-    // try to find card facing up in the source column that would fit on target card
-    for (i = 0; i < pSource->m_size; i++) {
-        pSrcCard = &pSource->m_cards[i];
-        if (!pSrcCard->m_down && (
-            (pTgtCard && oneLess(*pSrcCard, *pTgtCard) && oppositeColor(*pSrcCard, *pTgtCard)) ||
-            (!pTgtCard && pSrcCard->m_type == ct_king))) {
-            break;    // got it
+    if (revealOnly) {
+        // find the first card facing up in the source column
+        for (i = 0; i < pSource->m_size; i++) {
+            if (!pSource->m_cards[i].m_down) {
+                pSrcCard = &pSource->m_cards[i];
+                // don't move king if there's no card under it
+                if (i == 0 && pSrcCard->m_type == ct_king) {
+                    pSrcCard = NULL;
+                }
+                break;
+            }
         }
-        pSrcCard = NULL;
+
+        // verify whether it would fit on target card
+        if (pSrcCard && !isCardMovableToDesk(*pSrcCard, pTarget)) {
+            pSrcCard = NULL;
+        }
+    } else {
+        // try to find card facing up in the source column that would fit on target card
+        for (i = 0; i < pSource->m_size; i++) {
+            pSrcCard = &pSource->m_cards[i];
+            if (!pSrcCard->m_down && isCardMovableToDesk(*pSrcCard, pTarget)) {
+                break;    // got it
+            }
+            pSrcCard = NULL;
+        }
     }
 
     if (!pSrcCard) {
         return false;
     }
 
+    // move cards from one stack to the other
     initStack(&helpStack);
 
     while (i < pSource->m_size) {
@@ -174,6 +213,42 @@ bool moveDeskToDesk(int srcNum, int tgtNum) {
     return true;
 }
 
+bool moveDeskToDesk(int srcNum, int tgtNum) {
+    return moveDeskToDesk3(srcNum, tgtNum, true);
+}
+
+
+void moveAnything() {
+    // try to move cards between desk stacks
+    for (int i = 0; i < STACKS; i++) {
+        for (int j = 0; j < STACKS; j++) {
+            if ((i != j) && moveDeskToDesk3(i, j, true)) {
+                return;
+            }
+        }
+    }
+    // try to move the pack card to any desk stack
+    for (int i = 0; i < STACKS; i++) {
+        if (movePackToDesk(i)) {
+            return;
+        }
+    }
+
+    // try to move any desk card to colors
+    for (int i = 0; i < STACKS; i++) {
+        if (moveDeskToColors(i)) {
+            return;
+        }
+    }
+
+    // try to move the pack card to colors
+    if (movePackToColors()) {
+        return;
+    }
+
+    // if everything else fails, draw next card
+    nextCard();
+}
 
 bool isVictory() {
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
@@ -187,19 +262,25 @@ bool isVictory() {
 
 
 bool controlTable(enum Command cmd) {
+    bool rv = true;
+
     if (activeCmd == cmd_none) {
         if (cmd == cmd_next) {
             nextCard();
         } else if (cmd == cmd_pack || isCmdDesk(cmd) || isCmdColor(cmd)) {
             // want one more key to complete action
             activeCmd = cmd;
+        } else if (cmd == cmd_lazy) {
+            moveAnything();
+            #ifndef TURBO
+            sleep(1);
+            #endif
         } else {
             return false;
         }
-        return true;
 
     } else {
-        bool rv = false;
+        rv = false;
 
         if (isCmdColor(cmd) || cmd == activeCmd) {
             // move up or cancel action
@@ -229,13 +310,13 @@ bool controlTable(enum Command cmd) {
             return false;
         }
 
-        if (!rv) {
-            setMessage("!! Invalid move");
-        }
-
         activeCmd = cmd_none;
-        return true;
     }
+
+    if (!rv) {
+        setMessage("!! Invalid move");
+    }
+    return true;
 }
 
 

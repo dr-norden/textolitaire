@@ -24,7 +24,8 @@ enum Command {
     cmd_desk4,      // select desk stack 4
     cmd_desk5,      // select desk stack 5
     cmd_desk6,      // select desk stack 6
-    cmd_hack        // super secret key
+    cmd_lazy,       // secret key for lazy gamers
+    cmd_hack,       // super secret key for hackers
 };
 
 /* Initialize keyboard controls */

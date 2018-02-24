@@ -32,6 +32,7 @@ void initControls() {
     DefaultKeys[cmd_desk4]  = CMD_PRI_SELECT_DESK5;
     DefaultKeys[cmd_desk5]  = CMD_PRI_SELECT_DESK6;
     DefaultKeys[cmd_desk6]  = CMD_PRI_SELECT_DESK7;
+    DefaultKeys[cmd_lazy]   = '.';
     DefaultKeys[cmd_hack]   = '+';
 
     SecondaryKeys[cmd_none]   = '\0';
@@ -52,6 +53,7 @@ void initControls() {
     SecondaryKeys[cmd_desk4]  = CMD_SEC_SELECT_DESK5;
     SecondaryKeys[cmd_desk5]  = CMD_SEC_SELECT_DESK6;
     SecondaryKeys[cmd_desk6]  = CMD_SEC_SELECT_DESK7;
+    SecondaryKeys[cmd_lazy]   = '.';
     SecondaryKeys[cmd_hack]   = '+';
 
     generateHelp();
