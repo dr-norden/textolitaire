@@ -214,7 +214,7 @@ static bool moveDeskToDesk3(int srcNum, int tgtNum, bool revealOnly) {
 }
 
 bool moveDeskToDesk(int srcNum, int tgtNum) {
-    return moveDeskToDesk3(srcNum, tgtNum, true);
+    return moveDeskToDesk3(srcNum, tgtNum, false);
 }
 
 
