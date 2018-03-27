@@ -218,36 +218,41 @@ bool moveDeskToDesk(int srcNum, int tgtNum) {
 }
 
 
-void moveAnything() {
+bool moveAnything() {
     // try to move cards between desk stacks
     for (int i = 0; i < STACKS; i++) {
         for (int j = 0; j < STACKS; j++) {
             if ((i != j) && moveDeskToDesk3(i, j, true)) {
-                return;
+                return true;
             }
         }
     }
     // try to move the pack card to any desk stack
     for (int i = 0; i < STACKS; i++) {
         if (movePackToDesk(i)) {
-            return;
+            return true;
         }
     }
 
     // try to move any desk card to colors
     for (int i = 0; i < STACKS; i++) {
         if (moveDeskToColors(i)) {
-            return;
+            return true;
         }
     }
 
     // try to move the pack card to colors
     if (movePackToColors()) {
-        return;
+        return true;
     }
 
+    #ifdef TURBO
     // if everything else fails, draw next card
     nextCard();
+    return true;
+    #else
+    return false;
+    #endif
 }
 
 bool isVictory() {
@@ -271,10 +276,7 @@ bool controlTable(enum Command cmd) {
             // want one more key to complete action
             activeCmd = cmd;
         } else if (cmd == cmd_lazy) {
-            moveAnything();
-            #ifndef TURBO
-            sleep(1);
-            #endif
+            rv = moveAnything();
         } else {
             return false;
         }
