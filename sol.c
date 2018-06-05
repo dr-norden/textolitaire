@@ -32,6 +32,7 @@ int main(int argc, const char **argv) {
     }
 
     saveDiskData();
+    clearDisplay();
 
     return 0;
 }

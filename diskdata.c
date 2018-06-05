@@ -46,7 +46,7 @@ void initDiskData() {
 
     if (fp) {
         while (fscanf(fp, "%s%d", buffer, &number) != EOF) {
-            printf("string: '%s', number: '%d'\n", buffer, number);
+            //printf("string: '%s', number: '%d'\n", buffer, number);
             if (strcmp(buffer, hiScoreStr) == RET_OK) {
                 hiScore = number;
             } else if (strcmp(buffer, colorSchemeIdxStr) == RET_OK) {

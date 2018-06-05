@@ -19,6 +19,8 @@ struct ColorScheme {
 /* Initialize display variables. Should be called after initDiskData() */
 void initDisplay();
 
+/* Clear display data. Should be called before application close */
+void clearDisplay();
 
 /* Visualize all game vitals on the stdout */
 void displayAll();
@@ -26,21 +28,6 @@ void displayAll();
 
 /* Set the status/error message to display */
 void setMessage(const char *message);
-
-
-/* Print card to stdout */
-void printCard(struct Card card);
-
-
-/* Print stack to stdout */
-void printStack(struct SolStack *pStack);
-
-
-/* Print the top card of the stack or some text representation of empty stack
- * to stdout.
- */
-void printTop(struct SolStack *pStack);
-
 
 /* Change display properties based on the command from the keyboard.
  * Returns true if an action has been taken.

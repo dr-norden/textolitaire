@@ -39,10 +39,28 @@ static const struct ColorScheme Schemes[COLOR_SCHEMES] = {
 };
 
 
+
+/* Print card to stdout */
+void printCard(struct Card card);
+
+
+/* Print stack to stdout */
+void printStack(struct SolStack *pStack);
+
+/* Print the top card of the stack or some text representation of empty stack
+ * to stdout.
+ */
+void printTop(struct SolStack *pStack);
+
+
+
 void initDisplay() {
     ColorIdx = getColorSchemeIdx();
 }
 
+void clearDisplay() {
+    // nothing to be done
+}
 
 void setMessage(const char *message) {
     Message = message;
