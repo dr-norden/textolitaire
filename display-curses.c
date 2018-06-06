@@ -13,16 +13,16 @@
 #include <stdio.h>
 #include <string.h>
 
-const int CardHeight = 7;
-const int CardWidth = 9;
-const int CardDistanceX = CardHeight + 5;
-const int CardDistanceY = CardWidth + 1;
-const int PackBaseX = 1;
-const int PackBaseY = 1;
-const int ColorsBaseX = PackBaseX;
-const int ColorsBaseY = PackBaseY + 3*CardDistanceY;
-const int DeskBaseX = PackBaseX + CardDistanceX;
-const int DeskBaseY = PackBaseY;
+#define CardHeight ( 7 )
+#define CardWidth ( 9 )
+#define CardDistanceX ( CardHeight + 5 )
+#define CardDistanceY ( CardWidth + 1 )
+#define PackBaseX ( 1 )
+#define PackBaseY ( 1 )
+#define ColorsBaseX ( PackBaseX )
+#define ColorsBaseY ( PackBaseY + 3*CardDistanceY )
+#define DeskBaseX ( PackBaseX + CardDistanceX )
+#define DeskBaseY ( PackBaseY )
 
 const char *Message = "";
 
