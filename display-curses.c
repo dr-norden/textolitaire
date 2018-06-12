@@ -24,7 +24,8 @@
 #define DeskBaseX ( PackBaseX + CardDistanceX )
 #define DeskBaseY ( PackBaseY )
 
-const char *Message = "";
+static bool ShowHelp = false;
+const char *Message = "Press H for help";
 
 const char CardArtData[14][5][8] =
 {
@@ -196,6 +197,9 @@ bool controlDisplay(enum Command cmd)
 {
     if (cmd == cmd_exit) {
         endwin();
+    } else if (cmd == cmd_help) {
+        ShowHelp = !ShowHelp;
+        return true;
     }
     return false;
 }
@@ -221,6 +225,27 @@ void printEmptyGrid(int x, int y)
     }
 }
 
+void printCommand(enum Command cmd, int x, int y)
+{
+    char c = toupper(getCmdKey(cmd));
+    if (ShowHelp) {
+        switch (c) {
+            case ' ':
+                mvwprintw(stdscr, x, y, "<space>");
+                break;
+            case '\n':
+                mvwprintw(stdscr, x, y, "<enter>");
+                break;
+            case '\t':
+                mvwprintw(stdscr, x, y, "<tab>");
+                break;
+            default:
+                mvwaddch(stdscr, x, y, c);
+                break;
+        }
+    }
+}
+
 void printTop(struct SolStack *pStack, int x, int y)
 {
     if (topCard(pStack) == NULL) {
@@ -236,7 +261,7 @@ void displayColors(void)
     enum Command actCmd = getActiveCmd();
 
     for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
-        //printf(" %c:", toupper(getCmdKey(cmd_color0+cc)));
+        printCommand(cmd_color0+cc, ColorsBaseX+CardHeight, ColorsBaseY + CardDistanceY*cc + 1);
         printTop(&colStacks[cc], ColorsBaseX, ColorsBaseY + CardDistanceY*cc);
         if (actCmd == cmd_color0+cc) {
             printLabel(ColorsBaseX + 2, ColorsBaseY + 1 + CardDistanceY*cc, "sel");
@@ -250,7 +275,9 @@ void displayPack(void)
     struct SolStack *pRest = getRest();
     enum Command actCmd = getActiveCmd();
 
+    printCommand(cmd_next, PackBaseX+CardHeight, PackBaseY+1);
     printTop(pPack, PackBaseX, PackBaseY);
+    printCommand(cmd_pack, PackBaseX+CardHeight, PackBaseY+CardDistanceY + 1);
     printTop(pRest, PackBaseX, PackBaseY + CardDistanceY);
     if (actCmd == cmd_pack) {
         printLabel(PackBaseX + 2, PackBaseY + 1 + CardDistanceY, "sel");
@@ -272,9 +299,8 @@ void displayDesk(void)
     struct SolStack *deskStacks = getDeskStacks();
     enum Command actCmd = getActiveCmd();
 
-    //printf("desk\n");
     for (int i = 0; i < STACKS; i++) {
-        //printf(" %c:", toupper(getCmdKey(cmd_desk0+i)));
+        printCommand(cmd_desk0+i, DeskBaseX-1, DeskBaseY + CardDistanceY*i + 1);
         printStack(&deskStacks[i], DeskBaseX, DeskBaseY + CardDistanceY*i);
         if (actCmd == cmd_desk0+i) {
             printLabel(DeskBaseX+deskStacks[i].m_size*2, DeskBaseY + 1 + CardDistanceY*i, "sel");
