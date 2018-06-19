@@ -25,7 +25,7 @@
 #define DeskBaseY ( PackBaseY )
 
 static bool ShowHelp = false;
-const char *Message = "Press H for help";
+const char *Message = "";
 
 const char CardArtData[14][5][8] =
 {
@@ -135,7 +135,9 @@ void displayColors(void);
 void displayPack(void);
 void displayDesk(void);
 void displayStats(void);
+void displayHelp(void);
 void printRectangle(int x, int y, int lines, int columns);
+void wprintRectangle(WINDOW *win, int x, int y, int lines, int columns);
 void printLabel(int x, int y, const char *label);
 void printFullCard(struct Card card, int x, int y);
 
@@ -151,6 +153,7 @@ void initDisplay()
     init_pair(3, COLOR_BLACK, COLOR_WHITE);
     init_pair(4, COLOR_BLACK, COLOR_CYAN);
     init_pair(5, COLOR_WHITE, COLOR_GREEN);
+
 
     wbkgd(stdscr, COLOR_PAIR(4));
 }
@@ -184,7 +187,11 @@ void displayAll()
     if (Message[0] != '\0') {
         displayMessage();
     }
+
     refresh();
+    if (ShowHelp) {
+        displayHelp();
+    }
 }
 
 
@@ -195,11 +202,26 @@ void setMessage(const char *message)
 
 bool controlDisplay(enum Command cmd)
 {
+    if (ShowHelp) {
+        ShowHelp = false;
+        return true;
+    }
+
+    if (cmd == cmd_help) {
+        ShowHelp = !ShowHelp;
+    }
+
+    if (ShowHelp) {
+        return true;
+    }
+
+    if (cmd == cmd_scheme) {
+        setMessage("Changing color scheme not supported yet");
+        return true;
+    }
+
     if (cmd == cmd_exit) {
         endwin();
-    } else if (cmd == cmd_help) {
-        ShowHelp = !ShowHelp;
-        return true;
     }
     return false;
 }
@@ -228,21 +250,19 @@ void printEmptyGrid(int x, int y)
 void printCommand(enum Command cmd, int x, int y)
 {
     char c = toupper(getCmdKey(cmd));
-    if (ShowHelp) {
-        switch (c) {
-            case ' ':
-                mvwprintw(stdscr, x, y, "<space>");
-                break;
-            case '\n':
-                mvwprintw(stdscr, x, y, "<enter>");
-                break;
-            case '\t':
-                mvwprintw(stdscr, x, y, "<tab>");
-                break;
-            default:
-                mvwaddch(stdscr, x, y, c);
-                break;
-        }
+    switch (c) {
+        case ' ':
+            mvwprintw(stdscr, x, y, "[space]");
+            break;
+        case '\n':
+            mvwprintw(stdscr, x, y, "[enter]");
+            break;
+        case '\t':
+            mvwprintw(stdscr, x, y, "[tab]");
+            break;
+        default:
+            mvwaddch(stdscr, x, y, c);
+            break;
     }
 }
 
@@ -325,6 +345,21 @@ void displayStats(void)
     attroff(COLOR_PAIR(1));
 }
 
+void displayHelp(void) {
+    WINDOW *helpWin = NULL;
+    helpWin = newwin(20, 54, 3, 9);
+
+    wbkgd(helpWin, COLOR_PAIR(5));
+    wattron(helpWin, COLOR_PAIR(5));
+
+    mvwprintw(helpWin, 1, 0, getHelp());
+    wprintRectangle(helpWin, 0, 0, 19, 53);
+
+    wattroff(helpWin, COLOR_PAIR(5));
+
+    wrefresh(helpWin);
+}
+
 void printFullCard(struct Card card, int x, int y)
 {
     int i,j,colorNum;
@@ -402,5 +437,23 @@ void printRectangle(int x, int y, int lines, int columns)
     for (int i = 1; i < columns; i++) {
         mvwaddch(stdscr, x, y+i, ACS_HLINE);
         mvwaddch(stdscr, x+lines, y+i, ACS_HLINE);
+    }
+}
+
+void wprintRectangle(WINDOW *win, int x, int y, int lines, int columns)
+{
+    mvwaddch(win, x, y, ACS_ULCORNER);
+    mvwaddch(win, x, y+columns, ACS_URCORNER);
+    mvwaddch(win, x+lines, y, ACS_LLCORNER);
+    mvwaddch(win, x+lines, y+columns, ACS_LRCORNER);
+
+    for (int i = 1; i < lines; i++) {
+        mvwaddch(win, x+i, y, ACS_VLINE);
+        mvwaddch(win, x+i, y+columns, ACS_VLINE);
+    }
+
+    for (int i = 1; i < columns; i++) {
+        mvwaddch(win, x, y+i, ACS_HLINE);
+        mvwaddch(win, x+lines, y+i, ACS_HLINE);
     }
 }

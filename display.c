@@ -11,7 +11,7 @@
 static int ColorIdx = 0;
 static bool HackerMode = false;
 static bool ShowHelp = false;
-const char * Message = "Press h for help";
+const char * Message = "";
 
 #define CaWinSz 15
 const char * CaWin[CaWinSz] = {

@@ -108,11 +108,11 @@ void formatCmdHelp(char *buffer, enum Command cmd, const char *description) {
         strcat(keyBuf, keyBuf2);
     }
 
-    sprintf(&buffer[strlen(buffer)], " %-10s .. %s\n", keyBuf, description);
+    sprintf(&buffer[strlen(buffer)], "  %-10s .. %s\n", keyBuf, description);
 }
 
 void generateHelp() {
-    sprintf(Help, " double key .. move to color stack or cancel action\n");
+    sprintf(Help, "  double key .. move to color stack or cancel action\n");
     formatCmdHelp(Help, cmd_next,   "draw next card");
     formatCmdHelp(Help, cmd_pack,   "choose current card from the pack");
     formatCmdHelp(Help, cmd_color0, "choose stack of spades");

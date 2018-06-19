@@ -28,6 +28,7 @@
 *.x86_64
 *.hex
 sol
+textolitaire2
 
 # Debug files
 *.dSYM/

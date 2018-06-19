@@ -7,6 +7,7 @@
 
 
 static bool toExit = false;
+static bool firstFail = true;
 
 
 int main(int argc, const char **argv) {
@@ -27,7 +28,12 @@ int main(int argc, const char **argv) {
         if (controlGame(cmd) || controlDisplay(cmd) || controlTable(cmd)) {
             continue;
         } else {
-            setMessage("!! Invalid key");
+            if (firstFail) {
+                setMessage("!! Invalid key - press H for help");
+                firstFail = false;
+            } else {
+                setMessage("!! Invalid key");
+            }
         }
     }
 
