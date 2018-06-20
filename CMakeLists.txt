@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.5)
 project(textolitaire)
 
 # It's recommended to use a separate build directory to avoid rewriting
@@ -6,6 +6,7 @@ project(textolitaire)
 #
 # $ mkdir -p build; cd build && cmake .. && make
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 set(SOURCE_FILES1 getche.c card.c solstack.c controls.c display.c table.c sol.c diskdata.c)
 add_executable(textolitaire1 ${SOURCE_FILES1})
 
