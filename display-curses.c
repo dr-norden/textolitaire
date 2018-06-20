@@ -152,7 +152,7 @@ void initDisplay()
     init_pair(2, COLOR_RED,   COLOR_WHITE);
     init_pair(3, COLOR_BLACK, COLOR_WHITE);
     init_pair(4, COLOR_BLACK, COLOR_CYAN);
-    init_pair(5, COLOR_WHITE, COLOR_GREEN);
+    init_pair(5, COLOR_WHITE, COLOR_BLACK);
 
 
     wbkgd(stdscr, COLOR_PAIR(4));
