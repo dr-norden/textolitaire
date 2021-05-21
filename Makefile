@@ -1,34 +1,21 @@
-CC = gcc
-CFLAGS = -std=c11 -Wall
-TARGET=sol
-MODULES=getche.o card.o solstack.o controls.o display.o table.o sol.o diskdata.o
+all: build build/textolitaire1 build/textolitaire2
 
-all: $(TARGET)
+build:
+	cmake -S . -B build
 
-textolitaire2: getche.o card.o solstack.o controls.o display-curses.o table.o sol.o diskdata.o
-	@echo "[LD] $@ $^"
-	@ $(CC) -lncursesw $^ -o $@
+build/textolitaire1: build
+	cmake --build build --target textolitaire1
 
-display-curses.o: display-curses.c
-	@echo "[CC] $@ $<"
-	@ $(CC) $(CFLAGS) -c $< -o $@
-
-
-%.o: %.c %.h
-	@echo "[CC] $@ $<"
-	@ $(CC) $(CFLAGS) -c $< -o $@
-
-$(TARGET): $(MODULES)
-	@echo "[LD] $@ $^"
-	@ $(CC) $^ -o $@
-
-run:: $(TARGET)
-	./$<
+build/textolitaire2: build
+	cmake --build build --target textolitaire2
 
 clean::
-	@echo "[RM] $(TARGET) $(MODULES)"
-	@ rm -f $(TARGET) $(MODULES)
+	cmake --build build --target clean
 
-again::
-	@ $(MAKE) clean
-	@ $(MAKE)
+run:: run1
+
+run1:: build/textolitaire1
+	./$<
+
+run2:: build/textolitaire2
+	./$<

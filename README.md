@@ -15,8 +15,8 @@ Curses face-lift for the same game.
 
 ![Screenshot](textolitaire-v2.png)
 
-To compile fully playable demo version, use:
+To compile and run the game, use:
 
 ```
-make textolitaire2
+make run2
 ```
