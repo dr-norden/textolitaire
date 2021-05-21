@@ -37,3 +37,7 @@ textolitaire2
 # Vim files
 *.swp
 *.swo
+
+# CMake build files
+build
+build/*
