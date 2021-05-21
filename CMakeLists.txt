@@ -6,8 +6,19 @@ project(textolitaire)
 #
 # $ mkdir -p build; cd build && cmake .. && make
 
+
+set(SOURCE_FILES_COMMON src/getche.c
+                        src/card.c
+                        src/solstack.c
+                        src/controls.c
+                        src/table.c
+                        src/sol.c
+                        src/diskdata.c)
+
+include_directories(inc)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-set(SOURCE_FILES1 getche.c card.c solstack.c controls.c display.c table.c sol.c diskdata.c)
+set(SOURCE_FILES1 ${SOURCE_FILES_COMMON} src/display.c)
+
 add_executable(textolitaire1 ${SOURCE_FILES1})
 
 find_package(Curses REQUIRED)
@@ -21,7 +32,8 @@ if(NOT CURSES_TINFOW_LIBRARY)
   find_library(CURSES_TINFOW_LIBRARY "libtinfo.so")
 endif(NOT CURSES_TINFOW_LIBRARY)
 
-set(SOURCE_FILES2 getche.c card.c solstack.c controls.c display-curses.c table.c sol.c diskdata.c)
+set(SOURCE_FILES2 ${SOURCE_FILES_COMMON} src/display-curses.c)
+
 add_executable(textolitaire2 ${SOURCE_FILES2})
 
 target_link_libraries(textolitaire2 ${CURSES_NCURSESW_LIBRARY} ${CURSES_TINFOW_LIBRARY})
