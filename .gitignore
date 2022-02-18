@@ -41,3 +41,6 @@ textolitaire2
 # CMake build files
 build
 build/*
+
+# IDE project files
+.vscode
