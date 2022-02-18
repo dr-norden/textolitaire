@@ -8,7 +8,7 @@
 
 #define SOL_STACK_MAX 52
 
-/* Stack big enough to hold all playable cards. Can be updated as FIFO */
+/* Stack big enough to hold all playable cards. */
 struct SolStack {
     size_t      m_size;
     struct Card m_cards[SOL_STACK_MAX];
