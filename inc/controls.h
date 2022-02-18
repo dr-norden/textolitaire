@@ -6,7 +6,7 @@
 
 /* List of game commands  */
 enum Command {
-    cmd_none,       // do nothing
+    cmd_none = 0,   // do nothing
     cmd_exit,       // exit game
     cmd_reset,      // restart game
     cmd_help,       // toggle help

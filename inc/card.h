@@ -5,7 +5,7 @@
 
 /* Card types - ordered by value */
 enum CardType {
-    ct_none,
+    ct_none = 0,
     ct_ace,
     ct_two,
     ct_three,
@@ -24,10 +24,10 @@ enum CardType {
 
 /* Card colors */
 enum CardColor {
-    cc_spades,  // black
-    cc_hearts,  // red
-    cc_clubs,   // black
-    cc_diamonds // red
+    cc_spades = 0,  // black
+    cc_hearts,      // red
+    cc_clubs,       // black
+    cc_diamonds     // red
 };
 
 
