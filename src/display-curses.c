@@ -1,3 +1,4 @@
+#define _DEFAULT_SOURCE
 #include <locale.h>
 #include <ncurses.h>
 #include <string.h>
@@ -12,6 +13,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #define CardHeight ( 7 )
 #define CardWidth ( 9 )
@@ -131,11 +133,14 @@ const char CardArtData[14][5][8] =
 
 const char *ColorSymbols[4] = { "♠", "♥", "♣", "♦" };
 
+void handleVictory(void);
 void displayColors(void);
 void displayPack(void);
 void displayDesk(void);
 void displayStats(void);
 void displayHelp(void);
+void displayFlying(void);
+void finalAnimation(void);
 void printRectangle(int x, int y, int lines, int columns);
 void wprintRectangle(WINDOW *win, int x, int y, int lines, int columns);
 void printLabel(int x, int y, const char *label);
@@ -174,14 +179,12 @@ void displayMessage(void)
 
 void displayAll()
 {
+    handleVictory();
     erase();
-    if (isVictory()) {
-        Message = "YOU WIN";
-    }
-
     displayColors();
     displayPack();
     displayDesk();
+    displayFlying();
     displayStats();
 
     if (Message[0] != '\0') {
@@ -204,6 +207,12 @@ bool controlDisplay(enum Command cmd)
 {
     if (ShowHelp) {
         ShowHelp = false;
+        return true;
+    }
+
+    if (cmd == cmd_hack) {
+        setMessage("Hacker! Press any key to stop animation");
+        finalAnimation();
         return true;
     }
 
@@ -455,5 +464,99 @@ void wprintRectangle(WINDOW *win, int x, int y, int lines, int columns)
     for (int i = 1; i < columns; i++) {
         mvwaddch(win, x, y+i, ACS_HLINE);
         mvwaddch(win, x+lines, y+i, ACS_HLINE);
+    }
+}
+
+static struct
+{
+    bool m_enabled;
+    struct Card m_card;
+    int m_x;
+    int m_y;
+    int m_dirX;
+    int m_dirY;
+} FlyingCard = {
+    false,
+    {ct_king, cc_spades, false},
+    0, 0, 1, 1
+};
+
+void resetFlyingCard(int maxHeight)
+{
+    int maxWidth = 7 * CardWidth;
+
+    FlyingCard.m_dirX = (rand() % 2) ? 1 : -1;
+    FlyingCard.m_x = (FlyingCard.m_dirX > 0) ? -CardHeight : maxHeight;
+
+    FlyingCard.m_dirY = (rand() % 7) -3;
+    FlyingCard.m_y = rand() % CardWidth;
+
+    FlyingCard.m_card.m_color = rand() % 4;
+    FlyingCard.m_card.m_type = (rand() % ct_king) + 1;
+    FlyingCard.m_card.m_down = (rand() % 5) == 0;
+}
+
+void displayFlying(void)
+{
+    if (FlyingCard.m_enabled) {
+        printFullCard(FlyingCard.m_card, FlyingCard.m_x, FlyingCard.m_y);
+    }
+}
+
+void moveFlying(void)
+{
+    if (FlyingCard.m_enabled) {
+        FlyingCard.m_x += FlyingCard.m_dirX;
+        FlyingCard.m_y += FlyingCard.m_dirY;
+        if ((FlyingCard.m_y < 0) || (FlyingCard.m_y >= (7 * CardWidth))) {
+            FlyingCard.m_dirY *= -1;
+        }
+    }
+}
+
+static void sleepMs(int ms)
+{
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = 1000L * 1000L * (long)ms;
+    nanosleep(&ts, NULL);
+}
+
+void finalAnimation(void)
+{
+    int maxX = getmaxy(stdscr);
+    bool keyPressed = false;
+
+    cbreak();
+    nodelay(stdscr, TRUE);
+
+    FlyingCard.m_enabled = true;
+    while (!keyPressed) {
+        resetFlyingCard(maxX);
+        int sleepTime = (rand()%50) + 10;
+        for (int i = 0; i < (maxX + CardHeight); i++) {
+            moveFlying();
+            displayAll();
+            sleepMs(sleepTime);
+
+            if (getch() > 0) {
+                keyPressed = true;
+                break;
+            }
+        }
+    }
+    FlyingCard.m_enabled = false;
+    setMessage("");
+
+    nodelay(stdscr, FALSE);
+}
+
+void handleVictory(void)
+{
+    static bool inAnimation = false;
+    if (!inAnimation && isVictory()) {
+        inAnimation = true;
+        finalAnimation();
+        inAnimation = false;
     }
 }
