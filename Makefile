@@ -1,12 +1,12 @@
 all: build build/textolitaire1 build/textolitaire2
 
-build:
+build::
 	cmake -S . -B build
 
-build/textolitaire1: build
+build/textolitaire1:: build
 	cmake --build build --target textolitaire1
 
-build/textolitaire2: build
+build/textolitaire2:: build
 	cmake --build build --target textolitaire2
 
 clean::
