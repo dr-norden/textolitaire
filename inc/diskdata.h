@@ -2,21 +2,27 @@
 #define __DISKDATA_H__
 
 /* Initialize data from data file */
-void initDiskData();
+void dd_Init(void);
 
 /* Save data to data file */
-void saveDiskData();
+void dd_Save(void);
 
 /* Return the saved high score */
-int getHiScore();
+int dd_GetHighScore(void);
 
 /* Set the new high score */
-void setHiScore(int score);
+void dd_SetHighScore(int score);
 
-/* Get the saved color scheme index */
-int getColorSchemeIdx();
+/* Get index of the saved color scheme for Textolitaire1 */
+int dd_GetColorSchemeIdx(void);
 
-/* Set the new color scheme index */
-void setColorSchemeIdx(int index);
+/* Set new index of the saved color scheme for Textolitaire1 */
+void dd_SetColorSchemeIdx(int index);
+
+/* Get index of the saved color scheme for Textolitaire2 */
+int dd_GetColorScheme2Idx(void);
+
+/* Set new index of the saved color scheme for Textolitaire2 */
+void dd_SetColorScheme2Idx(int index);
 
 #endif

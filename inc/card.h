@@ -4,63 +4,60 @@
 #include <stdbool.h>
 
 /* Card types - ordered by value */
-enum CardType {
-    ct_none = 0,
-    ct_ace,
-    ct_two,
-    ct_three,
-    ct_four,
-    ct_five,
-    ct_six,
-    ct_seven,
-    ct_eight,
-    ct_nine,
-    ct_ten,
-    ct_jack,
-    ct_queen,
-    ct_king
-};
-
+typedef enum
+{
+  CT_NONE = 0,
+  CT_ACE,
+  CT_TWO,
+  CT_THREE,
+  CT_FOUR,
+  CT_FIVE,
+  CT_SIX,
+  CT_SEVEN,
+  CT_EIGHT,
+  CT_NINE,
+  CT_TEN,
+  CT_JACK,
+  CT_QUEEN,
+  CT_KING,
+  NUM_CARD_TYPES
+} ECardType_t;
 
 /* Card colors */
-enum CardColor {
-    cc_spades = 0,  // black
-    cc_hearts,      // red
-    cc_clubs,       // black
-    cc_diamonds     // red
-};
+typedef enum
+{
+  CC_SPADES = 0, // black
+  CC_HEARTS,     // red
+  CC_CLUBS,      // black
+  CC_DIAMONDS,   // red
+  NUM_CARD_COLORS
+} ECardColor_t;
 
+/* Directions a card can be facing */
+typedef enum
+{
+  CF_DOWN = 0,
+  CF_UP
+} ECardFace_t;
 
-/* Card - defined by type color and side (face up or face down) */
-struct Card {
-    enum CardType  m_type;
-    enum CardColor m_color;
-    bool           m_down;
-};
-
+/* Card - defined by type color and facing (up or down) */
+typedef struct
+{
+  ECardType_t m_type;
+  ECardColor_t m_color;
+  ECardFace_t m_face;
+} Card_t;
 
 /* Return true if card is red (hearts or diamonds) */
-bool isRed(struct Card card);
-
+bool card_IsRed(Card_t card);
 
 /* Return true, if card1 is one less than card2 in type order */
-bool oneLess(struct Card card1, struct Card card2);
-
+bool card_IsOneLess(Card_t card1, Card_t card2);
 
 /* Return true if one card is red while the other card is black */
-bool oppositeColor(struct Card card1, struct Card card2);
-
+bool card_IsOppositeColor(Card_t card1, Card_t card2);
 
 /* Swap the attributes of given Card structures */
-void swapCard(struct Card *pCard1, struct Card *pCard2);
-
-
-/* Return short text representation of card's type */
-const char * typeMark(struct Card card);
-
-
-/* Return short text representation of card's color */
-const char * colorMark(struct Card card);
-
+void card_Swap(Card_t* card1Ptr, Card_t* card2Ptr);
 
 #endif

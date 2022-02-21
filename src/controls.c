@@ -1,139 +1,150 @@
-#include "config.h"
 #include "controls.h"
+#include "config.h"
 #include <ctype.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#define KEYS 19
+//----------------------------------------------------------------------------
+// Private definitions/variables
+//----------------------------------------------------------------------------
 
-static char DefaultKeys[KEYS];
-static char SecondaryKeys[KEYS];
-static char Help[1024];
+static char DefaultKeys[NUM_COMMANDS];
+static char SecondaryKeys[NUM_COMMANDS];
+static char HelpString[1024];
 
-/* Generate help string from initialized controls */
-static void generateHelp();
+//----------------------------------------------------------------------------
+// Private function prototypes
+//----------------------------------------------------------------------------
 
-void initControls() {
-    DefaultKeys[cmd_none]   = '\0';
-    DefaultKeys[cmd_exit]   = CMD_PRI_EXIT_GAME;
-    DefaultKeys[cmd_reset]  = CMD_PRI_NEW_GAME;
-    DefaultKeys[cmd_help]   = CMD_PRI_SHOW_HELP;
-    DefaultKeys[cmd_scheme] = CMD_PRI_CHANGE_SCHEME;
-    DefaultKeys[cmd_next]   = CMD_PRI_NEXT_CARD;
-    DefaultKeys[cmd_pack]   = CMD_PRI_SELECT_PACK;
-    DefaultKeys[cmd_color0] = CMD_PRI_SELECT_COLOR1;
-    DefaultKeys[cmd_color1] = CMD_PRI_SELECT_COLOR2;
-    DefaultKeys[cmd_color2] = CMD_PRI_SELECT_COLOR3;
-    DefaultKeys[cmd_color3] = CMD_PRI_SELECT_COLOR4;
-    DefaultKeys[cmd_desk0]  = CMD_PRI_SELECT_DESK1;
-    DefaultKeys[cmd_desk1]  = CMD_PRI_SELECT_DESK2;
-    DefaultKeys[cmd_desk2]  = CMD_PRI_SELECT_DESK3;
-    DefaultKeys[cmd_desk3]  = CMD_PRI_SELECT_DESK4;
-    DefaultKeys[cmd_desk4]  = CMD_PRI_SELECT_DESK5;
-    DefaultKeys[cmd_desk5]  = CMD_PRI_SELECT_DESK6;
-    DefaultKeys[cmd_desk6]  = CMD_PRI_SELECT_DESK7;
-    DefaultKeys[cmd_lazy]   = '.';
-    DefaultKeys[cmd_hack]   = '+';
+/* Helper functions to generate help */
+static void FormatKey(char* buffer, char key);
+static void FormatCmdHelp(char* buffer,
+                          ECommand_t cmd,
+                          const char* description);
+static void GenerateHelp(void);
 
-    SecondaryKeys[cmd_none]   = '\0';
-    SecondaryKeys[cmd_exit]   = CMD_SEC_EXIT_GAME;
-    SecondaryKeys[cmd_reset]  = CMD_SEC_NEW_GAME;
-    SecondaryKeys[cmd_help]   = CMD_SEC_SHOW_HELP;
-    SecondaryKeys[cmd_scheme] = CMD_SEC_CHANGE_SCHEME;
-    SecondaryKeys[cmd_next]   = CMD_SEC_NEXT_CARD;
-    SecondaryKeys[cmd_pack]   = CMD_SEC_SELECT_PACK;
-    SecondaryKeys[cmd_color0] = CMD_SEC_SELECT_COLOR1;
-    SecondaryKeys[cmd_color1] = CMD_SEC_SELECT_COLOR2;
-    SecondaryKeys[cmd_color2] = CMD_SEC_SELECT_COLOR3;
-    SecondaryKeys[cmd_color3] = CMD_SEC_SELECT_COLOR4;
-    SecondaryKeys[cmd_desk0]  = CMD_SEC_SELECT_DESK1;
-    SecondaryKeys[cmd_desk1]  = CMD_SEC_SELECT_DESK2;
-    SecondaryKeys[cmd_desk2]  = CMD_SEC_SELECT_DESK3;
-    SecondaryKeys[cmd_desk3]  = CMD_SEC_SELECT_DESK4;
-    SecondaryKeys[cmd_desk4]  = CMD_SEC_SELECT_DESK5;
-    SecondaryKeys[cmd_desk5]  = CMD_SEC_SELECT_DESK6;
-    SecondaryKeys[cmd_desk6]  = CMD_SEC_SELECT_DESK7;
-    SecondaryKeys[cmd_lazy]   = '.';
-    SecondaryKeys[cmd_hack]   = '+';
+//----------------------------------------------------------------------------
+// Public function implementation
+//----------------------------------------------------------------------------
 
-    generateHelp();
+void ctrl_Init(void)
+{
+  DefaultKeys[CMD_NONE] = '\0';
+  DefaultKeys[CMD_EXIT] = KEY_PRI_EXIT_GAME;
+  DefaultKeys[CMD_RESET] = KEY_PRI_NEW_GAME;
+  DefaultKeys[CMD_HELP] = KEY_PRI_SHOW_HELP;
+  DefaultKeys[CMD_SCHEME] = KEY_PRI_CHANGE_SCHEME;
+  DefaultKeys[CMD_NEXT] = KEY_PRI_NEXT_CARD;
+  DefaultKeys[CMD_PACK] = KEY_PRI_SELECT_PACK;
+  DefaultKeys[CMD_COLOR0] = KEY_PRI_SELECT_COLOR1;
+  DefaultKeys[CMD_COLOR1] = KEY_PRI_SELECT_COLOR2;
+  DefaultKeys[CMD_COLOR2] = KEY_PRI_SELECT_COLOR3;
+  DefaultKeys[CMD_COLOR3] = KEY_PRI_SELECT_COLOR4;
+  DefaultKeys[CMD_DESK0] = KEY_PRI_SELECT_DESK1;
+  DefaultKeys[CMD_DESK1] = KEY_PRI_SELECT_DESK2;
+  DefaultKeys[CMD_DESK2] = KEY_PRI_SELECT_DESK3;
+  DefaultKeys[CMD_DESK3] = KEY_PRI_SELECT_DESK4;
+  DefaultKeys[CMD_DESK4] = KEY_PRI_SELECT_DESK5;
+  DefaultKeys[CMD_DESK5] = KEY_PRI_SELECT_DESK6;
+  DefaultKeys[CMD_DESK6] = KEY_PRI_SELECT_DESK7;
+  DefaultKeys[CMD_LAZY] = '.';
+  DefaultKeys[CMD_HACK] = '+';
+
+  SecondaryKeys[CMD_NONE] = '\0';
+  SecondaryKeys[CMD_EXIT] = KEY_SEC_EXIT_GAME;
+  SecondaryKeys[CMD_RESET] = KEY_SEC_NEW_GAME;
+  SecondaryKeys[CMD_HELP] = KEY_SEC_SHOW_HELP;
+  SecondaryKeys[CMD_SCHEME] = KEY_SEC_CHANGE_SCHEME;
+  SecondaryKeys[CMD_NEXT] = KEY_SEC_NEXT_CARD;
+  SecondaryKeys[CMD_PACK] = KEY_SEC_SELECT_PACK;
+  SecondaryKeys[CMD_COLOR0] = KEY_SEC_SELECT_COLOR1;
+  SecondaryKeys[CMD_COLOR1] = KEY_SEC_SELECT_COLOR2;
+  SecondaryKeys[CMD_COLOR2] = KEY_SEC_SELECT_COLOR3;
+  SecondaryKeys[CMD_COLOR3] = KEY_SEC_SELECT_COLOR4;
+  SecondaryKeys[CMD_DESK0] = KEY_SEC_SELECT_DESK1;
+  SecondaryKeys[CMD_DESK1] = KEY_SEC_SELECT_DESK2;
+  SecondaryKeys[CMD_DESK2] = KEY_SEC_SELECT_DESK3;
+  SecondaryKeys[CMD_DESK3] = KEY_SEC_SELECT_DESK4;
+  SecondaryKeys[CMD_DESK4] = KEY_SEC_SELECT_DESK5;
+  SecondaryKeys[CMD_DESK5] = KEY_SEC_SELECT_DESK6;
+  SecondaryKeys[CMD_DESK6] = KEY_SEC_SELECT_DESK7;
+  SecondaryKeys[CMD_LAZY] = '.';
+  SecondaryKeys[CMD_HACK] = '+';
+
+  GenerateHelp();
 }
 
-
-enum Command keyToCmd(char c) {
-    for (enum Command cmd = cmd_none; cmd <= cmd_hack; cmd++) {
-        if (DefaultKeys[cmd] == c || SecondaryKeys[cmd] == c) {
-            return cmd;
-        }
+ECommand_t ctrl_KeyToCmd(char c)
+{
+  for (ECommand_t cmd = CMD_NONE; cmd < NUM_COMMANDS; cmd++) {
+    if (DefaultKeys[cmd] == c || SecondaryKeys[cmd] == c) {
+      return cmd;
     }
+  }
 
-    return cmd_none;
+  return CMD_NONE;
 }
 
-
-bool isCmdDesk(enum Command cmd) {
-    return cmd >= cmd_desk0 && cmd <= cmd_desk6;
+char ctrl_GetCmdKey(ECommand_t cmd)
+{
+  return DefaultKeys[cmd];
 }
 
-bool isCmdColor(enum Command cmd) {
-    return cmd >= cmd_color0 && cmd <= cmd_color3;
+const char* ctrl_GetHelp(void)
+{
+  return HelpString;
 }
 
-char getCmdKey(enum Command cmd) {
-    return DefaultKeys[cmd];
+//----------------------------------------------------------------------------
+// Private function implementation
+//----------------------------------------------------------------------------
+
+static void FormatKey(char* buffer, char key)
+{
+  switch (key) {
+    case ' ': sprintf(buffer, "space"); break;
+    case '\n': sprintf(buffer, "enter"); break;
+    case '\b': sprintf(buffer, "bkspc"); break;
+    case '\t': sprintf(buffer, "tab"); break;
+    case '\x1B': sprintf(buffer, "esc"); break;
+    case '\x7f': sprintf(buffer, "del"); break;
+    default: sprintf(buffer, "%c", toupper(key)); break;
+  }
 }
 
+static void FormatCmdHelp(char* buffer, ECommand_t cmd, const char* description)
+{
+  char keyBuf[20];
+  FormatKey(keyBuf, DefaultKeys[cmd]);
 
-void formatKey(char *buffer, char key) {
-    switch (key) {
-        case ' ':    sprintf(buffer, "space"); break;
-        case '\n':   sprintf(buffer, "enter"); break;
-        case '\b':   sprintf(buffer, "bkspc"); break;
-        case '\t':   sprintf(buffer, "tab");   break;
-        case '\x1B': sprintf(buffer, "esc");   break;
-        case '\x7f': sprintf(buffer, "del");   break;
-        default: sprintf(buffer, "%c", toupper(key)); break;
-    }
+  if (DefaultKeys[cmd] != SecondaryKeys[cmd]) {
+    char keyBuf2[10];
+    FormatKey(keyBuf2, SecondaryKeys[cmd]);
+    strcat(keyBuf, " or ");
+    strcat(keyBuf, keyBuf2);
+  }
+
+  sprintf(&buffer[strlen(buffer)], "  %-10s .. %s\n", keyBuf, description);
 }
 
-
-void formatCmdHelp(char *buffer, enum Command cmd, const char *description) {
-    char keyBuf[20];
-    formatKey(keyBuf, DefaultKeys[cmd]);
-
-    if (DefaultKeys[cmd] != SecondaryKeys[cmd]) {
-        char keyBuf2[10];
-        formatKey(keyBuf2, SecondaryKeys[cmd]);
-        strcat(keyBuf, " or ");
-        strcat(keyBuf, keyBuf2);
-    }
-
-    sprintf(&buffer[strlen(buffer)], "  %-10s .. %s\n", keyBuf, description);
+static void GenerateHelp(void)
+{
+  sprintf(HelpString, "  double key .. move to color stack or cancel action\n");
+  FormatCmdHelp(HelpString, CMD_NEXT, "draw next card");
+  FormatCmdHelp(HelpString, CMD_PACK, "choose current card from the pack");
+  FormatCmdHelp(HelpString, CMD_COLOR0, "choose stack of spades");
+  FormatCmdHelp(HelpString, CMD_COLOR1, "choose stack of hearts");
+  FormatCmdHelp(HelpString, CMD_COLOR2, "choose stack of clubs");
+  FormatCmdHelp(HelpString, CMD_COLOR3, "choose stack of diamonds");
+  FormatCmdHelp(HelpString, CMD_DESK0, "choose desk stack 1");
+  FormatCmdHelp(HelpString, CMD_DESK1, "choose desk stack 2");
+  FormatCmdHelp(HelpString, CMD_DESK2, "choose desk stack 3");
+  FormatCmdHelp(HelpString, CMD_DESK3, "choose desk stack 4");
+  FormatCmdHelp(HelpString, CMD_DESK4, "choose desk stack 5");
+  FormatCmdHelp(HelpString, CMD_DESK5, "choose desk stack 6");
+  FormatCmdHelp(HelpString, CMD_DESK6, "choose desk stack 7");
+  FormatCmdHelp(HelpString, CMD_SCHEME, "change text color scheme");
+  FormatCmdHelp(HelpString, CMD_HELP, "show/hide help");
+  FormatCmdHelp(HelpString, CMD_RESET, "restart game");
+  FormatCmdHelp(HelpString, CMD_EXIT, "quit game");
 }
-
-void generateHelp() {
-    sprintf(Help, "  double key .. move to color stack or cancel action\n");
-    formatCmdHelp(Help, cmd_next,   "draw next card");
-    formatCmdHelp(Help, cmd_pack,   "choose current card from the pack");
-    formatCmdHelp(Help, cmd_color0, "choose stack of spades");
-    formatCmdHelp(Help, cmd_color1, "choose stack of hearts");
-    formatCmdHelp(Help, cmd_color2, "choose stack of clubs");
-    formatCmdHelp(Help, cmd_color3, "choose stack of diamonds");
-    formatCmdHelp(Help, cmd_desk0,  "choose desk stack 1");
-    formatCmdHelp(Help, cmd_desk1,  "choose desk stack 2");
-    formatCmdHelp(Help, cmd_desk2,  "choose desk stack 3");
-    formatCmdHelp(Help, cmd_desk3,  "choose desk stack 4");
-    formatCmdHelp(Help, cmd_desk4,  "choose desk stack 5");
-    formatCmdHelp(Help, cmd_desk5,  "choose desk stack 6");
-    formatCmdHelp(Help, cmd_desk6,  "choose desk stack 7");
-    formatCmdHelp(Help, cmd_scheme, "change text color scheme");
-    formatCmdHelp(Help, cmd_help,   "show/hide help");
-    formatCmdHelp(Help, cmd_reset,  "restart game");
-    formatCmdHelp(Help, cmd_exit,   "quit game");
-}
-
-const char * getHelp() {
-    return Help;
-}
-
-

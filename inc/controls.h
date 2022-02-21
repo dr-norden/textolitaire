@@ -3,47 +3,42 @@
 
 #include <stdbool.h>
 
-
 /* List of game commands  */
-enum Command {
-    cmd_none = 0,   // do nothing
-    cmd_exit,       // exit game
-    cmd_reset,      // restart game
-    cmd_help,       // toggle help
-    cmd_scheme,     // change color scheme
-    cmd_next,       // draw next card
-    cmd_pack,       // select actual card from the pack
-    cmd_color0,     // select color stack 0
-    cmd_color1,     // select color stack 1
-    cmd_color2,     // select color stack 2
-    cmd_color3,     // select color stack 3
-    cmd_desk0,      // select desk stack 0
-    cmd_desk1,      // select desk stack 1
-    cmd_desk2,      // select desk stack 2
-    cmd_desk3,      // select desk stack 3
-    cmd_desk4,      // select desk stack 4
-    cmd_desk5,      // select desk stack 5
-    cmd_desk6,      // select desk stack 6
-    cmd_lazy,       // secret key for lazy gamers
-    cmd_hack,       // super secret key for hackers
-};
+typedef enum
+{
+  CMD_NONE = 0, // do nothing
+  CMD_EXIT,     // exit game
+  CMD_RESET,    // restart game
+  CMD_HELP,     // toggle help
+  CMD_SCHEME,   // change color scheme
+  CMD_NEXT,     // draw next card
+  CMD_PACK,     // select actual card from the pack
+  CMD_COLOR0,   // select color stack 0
+  CMD_COLOR1,   // select color stack 1
+  CMD_COLOR2,   // select color stack 2
+  CMD_COLOR3,   // select color stack 3
+  CMD_DESK0,    // select desk stack 0
+  CMD_DESK1,    // select desk stack 1
+  CMD_DESK2,    // select desk stack 2
+  CMD_DESK3,    // select desk stack 3
+  CMD_DESK4,    // select desk stack 4
+  CMD_DESK5,    // select desk stack 5
+  CMD_DESK6,    // select desk stack 6
+  CMD_LAZY,     // secret key for lazy gamers
+  CMD_HACK,     // super secret key for hackers
+  NUM_COMMANDS,
+} ECommand_t;
 
 /* Initialize keyboard controls */
-void initControls();
-
-/* Return true if given command selects a desk stack */
-bool isCmdDesk(enum Command cmd);
-
-/* Return true if given command selects a color stack */
-bool isCmdColor(enum Command cmd);
+void ctrl_Init(void);
 
 /* Translate keyboard characted to command */
-enum Command keyToCmd(char key);
+ECommand_t ctrl_KeyToCmd(char key);
 
 /* Return default keyboard character for given command */
-char getCmdKey(enum Command cmd);
+char ctrl_GetCmdKey(ECommand_t cmd);
 
 /* Return help string for the game controls */
-const char * getHelp();
+const char* ctrl_GetHelp(void);
 
 #endif

@@ -1,21 +1,19 @@
-all: build build/textolitaire1 build/textolitaire2
+all: build
 
-build::
+config::
 	cmake -S . -B build
 
-build/textolitaire1:: build
-	cmake --build build --target textolitaire1
-
-build/textolitaire2:: build
-	cmake --build build --target textolitaire2
+build:: config
+	cmake --build build
 
 clean::
 	cmake --build build --target clean
 
 run:: run1
+	run1
 
-run1:: build/textolitaire1
-	./$<
+run1:: config
+	cmake --build build --target run1
 
-run2:: build/textolitaire2
-	./$<
+run2:: config
+	cmake --build build --target run2

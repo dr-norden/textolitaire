@@ -1,0 +1,9 @@
+---
+Language:        Cpp
+BasedOnStyle:  Mozilla
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+AllowShortCaseLabelsOnASingleLine: true
+AllowAllArgumentsOnNextLine: false
+...
+

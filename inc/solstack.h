@@ -1,73 +1,55 @@
 #ifndef __SOLSTACK_H__
 #define __SOLSTACK_H__
 
+#include "card.h"
 #include <stdbool.h>
 #include <stdlib.h>
-
-#include "card.h"
 
 #define SOL_STACK_MAX 52
 
 /* Stack big enough to hold all playable cards. */
-struct SolStack {
-    size_t      m_size;
-    struct Card m_cards[SOL_STACK_MAX];
-};
-
+typedef struct
+{
+  size_t m_size;
+  Card_t m_cards[SOL_STACK_MAX];
+} SolStack_t;
 
 /* Initialize an empty stack */
-void initStack(struct SolStack *pStack);
-
+void stk_InitEmpty(SolStack_t* stackPtr);
 
 /* Initialize an array of empty stacks */
-void initStacks(struct SolStack stacks[], size_t size);
-
+void stk_InitEmptyArray(SolStack_t stacks[], size_t size);
 
 /* Init stack with all playing cards */
-void initFullStack(struct SolStack *pStack);
-
-
-/* Randomly shuffle cards on given stack */
-void shuffleStack(struct SolStack *pStack);
-
+void stk_InitFull(SolStack_t* stackPtr);
 
 /* Return top card from the stack, or NULL if the stack is empty */
-struct Card * topCard(struct SolStack *pStack);
+Card_t* stk_TopCard(SolStack_t* stackPtr);
+const Card_t* stk_CTopCard(const SolStack_t* stackPtr);
 
-
-/* Add new card with given attributes at the top of the stack.
- * Returns the new top card or NULL if the stack was full and no card was added.
+/*
+ * Add new card at the top of the stack, copy the attributes from given card.
+ * Return true if the operation was successful.
  */
-struct Card * newCard(struct SolStack *pStack, enum CardColor color,
-                      enum CardType type);
+bool stk_PushCopy(SolStack_t* stackPtr, Card_t card);
 
-
-/* Add new card at the top of the stack, copy the attributes from given card.
- * Returns the new top card or NULL if the stack was full and no card was added.
+/*
+ * Remove the top card of the stack and copy its attributes to given structure.
+ * Return true if the operation was successful.
  */
-struct Card * pushStack(struct SolStack *pStack, struct Card card);
+bool stk_Pop(SolStack_t* stackPtr, Card_t* cardPtr);
 
-
-/* Remove the top card of the stack and copy its attributes to given Card structure.
- * Returns pointer to given structure or NULL if no card was removed.
+/*
+ * Move top card from source stack to target stack.
+ * Turn the new top card on the source stack facing up.
+ * Return true if the operation was successful.
  */
-struct Card * popStack(struct SolStack *pStack, struct Card *pCard);
+bool stk_MoveCardFromTo(SolStack_t* sourcePtr, SolStack_t* targetPtr);
 
+/* Turn the top card of the stack to face up */
+void stk_TurnTopCardUp(SolStack_t* stackPtr);
 
-/* Move top card from source stack to target stack. Turn the new top card
- * on the source stack facing up. Returns new top card from the target stack
- * or NULL if the operation was not successful.
- */
-struct Card * moveCard(struct SolStack *pSource, struct SolStack *pTarget);
-
-
-/* Turn the top card of the stack facing up */
-void topUp(struct SolStack *pStack);
-
-
-/* Turn the top card of the stack facing down */
-void topDown(struct SolStack *pStack);
-
-
+/* Turn the top card of the stack to face down */
+void stk_TurnTopCardDown(SolStack_t* stackPtr);
 
 #endif

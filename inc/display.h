@@ -1,38 +1,33 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
-#include "card.h"
-#include "solstack.h"
 #include "controls.h"
 
-#define COLOR_SCHEMES 3
-
-/* Structure to hold all colors used in the game */
-struct ColorScheme {
-    const char *m_normal;
-    const char *m_red;
-    const char *m_black;
-    const char *m_back;
-};
-
-
-/* Initialize display variables. Should be called after initDiskData() */
-void initDisplay();
+/* Initialize display variables. Should be called after dd_Init() */
+void dspl_Init(void);
 
 /* Clear display data. Should be called before application close */
-void clearDisplay();
+void dspl_Clear(void);
 
-/* Visualize all game vitals on the stdout */
-void displayAll();
-
+/* Visualize all game vitals */
+void dspl_Render(ECommand_t activeCmd);
 
 /* Set the status/error message to display */
-void setMessage(const char *message);
+void dspl_SetMessage(const char* message);
 
-/* Change display properties based on the command from the keyboard.
- * Returns true if an action has been taken.
+/* Show help (or hide if already shown) */
+void dspl_ShowHelp(void);
+
+/* Enter/exit hacker mode */
+void dspl_HackerMode(void);
+
+/* Change color scheme and apply */
+void dspl_ChangeColorScheme();
+
+/*
+ * Visualize victory in the game and wait for a keypress.
+ * Return the read key.
  */
-bool controlDisplay(enum Command cmd);
-
+char dspl_Victory(void);
 
 #endif

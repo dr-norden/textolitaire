@@ -2,121 +2,132 @@
 #include <string.h>
 #include <time.h>
 
+//----------------------------------------------------------------------------
+// Private function prototypes
+//----------------------------------------------------------------------------
 
-void initStack(struct SolStack *pStack) {
-    if (pStack) {
-        pStack->m_size = 0;
-        memset(pStack->m_cards, 0, sizeof(pStack->m_cards));
-    }
+static void PushNew(SolStack_t* stackPtr, ECardColor_t color, ECardType_t type);
+static void Shuffle(SolStack_t* stackPtr);
+
+//----------------------------------------------------------------------------
+// Public function implementation
+//----------------------------------------------------------------------------
+
+void stk_InitEmpty(SolStack_t* stackPtr)
+{
+  if (stackPtr) {
+    stackPtr->m_size = 0;
+    memset(stackPtr->m_cards, 0, sizeof(stackPtr->m_cards));
+  }
 }
 
-
-void initStacks(struct SolStack stacks[], size_t size) {
-    for (int i = 0; i < size; i++) {
-        initStack(&stacks[i]);
-    }
+void stk_InitEmptyArray(SolStack_t stacks[], size_t size)
+{
+  for (int i = 0; i < size; i++) {
+    stk_InitEmpty(&stacks[i]);
+  }
 }
 
-
-struct Card * topCard(struct SolStack *pStack) {
-    if (pStack && pStack->m_size > 0) {
-        return &pStack->m_cards[pStack->m_size-1];
-    }
-    return NULL;
-}
-
-
-struct Card * newCard(struct SolStack *pStack, enum CardColor color,
-                      enum CardType type) {
-
-    if (pStack && pStack->m_size < SOL_STACK_MAX) {
-        pStack->m_size++;
-        topCard(pStack)->m_color = color;
-        topCard(pStack)->m_type  = type;
-        topCard(pStack)->m_down  = true;
-        return topCard(pStack);
+void stk_InitFull(SolStack_t* stackPtr)
+{
+  if (stackPtr) {
+    stk_InitEmpty(stackPtr);
+    // fill the stack with all combinations of color and type
+    for (ECardColor_t cc = CC_SPADES; cc <= CC_DIAMONDS; cc++) {
+      for (ECardType_t ct = CT_ACE; ct <= CT_KING; ct++) {
+        PushNew(stackPtr, cc, ct);
+      }
     }
 
-    return NULL;
+    Shuffle(stackPtr);
+  }
 }
 
+Card_t* stk_TopCard(SolStack_t* stackPtr)
+{
+  if (stackPtr && stackPtr->m_size > 0) {
+    return &stackPtr->m_cards[stackPtr->m_size - 1];
+  }
+  return NULL;
+}
 
-struct Card * pushStack(struct SolStack *pStack, struct Card card) {
-    if (pStack->m_size < SOL_STACK_MAX) {
-        pStack->m_size++;
-        *topCard(pStack) = card;
-        return topCard(pStack);
+const Card_t* stk_CTopCard(const SolStack_t* stackPtr)
+{
+  return stk_TopCard((SolStack_t*)stackPtr);
+}
+
+bool stk_PushCopy(SolStack_t* stackPtr, Card_t card)
+{
+  if (stackPtr->m_size < SOL_STACK_MAX) {
+    stackPtr->m_size++;
+    *stk_TopCard(stackPtr) = card;
+    return true;
+  }
+  return false;
+}
+
+bool stk_Pop(SolStack_t* stackPtr, Card_t* cardPtr)
+{
+  if (cardPtr && stackPtr && stackPtr->m_size > 0) {
+    *cardPtr = *stk_TopCard(stackPtr);
+    stackPtr->m_size--;
+    return true;
+  }
+  return NULL;
+}
+
+bool stk_MoveCardFromTo(SolStack_t* sourcePtr, SolStack_t* targetPtr)
+{
+  if (sourcePtr && targetPtr) {
+    Card_t card;
+    if (stk_Pop(sourcePtr, &card)) {
+      if (stk_PushCopy(targetPtr, card)) {
+        stk_TurnTopCardUp(sourcePtr);
+        return true;
+      } else {
+        // target stack is probably full, push the card back to source
+        stk_PushCopy(sourcePtr, card);
+        return false;
+      }
     }
-    return NULL;
+  }
+  return false;
 }
 
+void stk_TurnTopCardUp(SolStack_t* stackPtr)
+{
+  if (stk_TopCard(stackPtr) != NULL) {
+    stk_TopCard(stackPtr)->m_face = CF_UP;
+  }
+}
 
-struct Card * popStack(struct SolStack *pStack, struct Card *pCard) {
-    if (pCard && pStack && pStack->m_size > 0) {
-        *pCard = *topCard(pStack);
-        pStack->m_size--;
-        return pCard;
+void stk_TurnTopCardDown(SolStack_t* stackPtr)
+{
+  if (stk_TopCard(stackPtr) != NULL) {
+    stk_TopCard(stackPtr)->m_face = CF_DOWN;
+  }
+}
+
+//----------------------------------------------------------------------------
+// Private function implementation
+//----------------------------------------------------------------------------
+
+static void PushNew(SolStack_t* stackPtr, ECardColor_t color, ECardType_t type)
+{
+  if (stackPtr && stackPtr->m_size < SOL_STACK_MAX) {
+    stackPtr->m_size++;
+    stk_TopCard(stackPtr)->m_color = color;
+    stk_TopCard(stackPtr)->m_type = type;
+    stk_TopCard(stackPtr)->m_face = CF_DOWN;
+  }
+}
+
+void Shuffle(SolStack_t* stackPtr)
+{
+  if (stackPtr) {
+    srand(time(NULL));
+    for (int i = stackPtr->m_size - 1; i >= 0; i--) {
+      card_Swap(&stackPtr->m_cards[i], &stackPtr->m_cards[rand() % (i + 1)]);
     }
-    return NULL;
+  }
 }
-
-
-void topUp(struct SolStack *pStack) {
-    if (topCard(pStack) != NULL) {
-        topCard(pStack)->m_down = false;
-    }
-}
-
-
-void topDown(struct SolStack *pStack) {
-    if (topCard(pStack) != NULL) {
-        topCard(pStack)->m_down = true;
-    }
-}
-
-
-void shuffleStack(struct SolStack *pStack) {
-    if (pStack) {
-        srand(time(NULL));
-        for (int i = pStack->m_size-1; i >= 0; i--) {
-            swapCard(&pStack->m_cards[i], &pStack->m_cards[rand()%(i+1)]);
-        }
-    }
-}
-
-
-void initFullStack(struct SolStack *pStack) {
-    if (pStack) {
-        initStack(pStack);
-        // fill the stack with all combinations of color and type
-        for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
-            for (enum CardType ct = ct_ace; ct <= ct_king; ct++) {
-                newCard(pStack, cc, ct);
-            }
-        }
-
-        shuffleStack(pStack);
-    }
-}
-
-
-
-struct Card * moveCard(struct SolStack *pSource, struct SolStack *pTarget) {
-    if (pSource && pTarget) {
-        struct Card card;
-        if (popStack(pSource, &card) != NULL) {
-            struct Card *pCard = pushStack(pTarget, card);
-            if (pCard) {
-                topUp(pSource);
-                return pCard;
-            } else {
-                // target stack is probably full, push the card back to source
-                pushStack(pSource, card);
-                return NULL;
-            }
-        }
-    }
-    return NULL;
-}
-
-

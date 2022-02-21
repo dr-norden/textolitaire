@@ -2,338 +2,274 @@
 #include "display.h"
 #include <unistd.h>
 
+//----------------------------------------------------------------------------
+// Private definitions/variables
+//----------------------------------------------------------------------------
+
 #define MIN_SCORE -2000000
+#define TURBO 1
 
-static struct SolStack pack;
-static struct SolStack rest;
-static struct SolStack stacks[STACKS];
-static struct SolStack colStacks[cc_diamonds+1];
-static enum Command activeCmd = cmd_none;
-static int score = 0;
+static SolStack_t PackStack;
+static SolStack_t RestStack;
+static SolStack_t DeskStacks[NUM_STACKS];
+static SolStack_t ColorStacks[NUM_CARD_COLORS];
+static int Score = 0;
 
-void initTable() {
-    initFullStack(&pack);
-    initStack(&rest);
-    initStacks(stacks, STACKS);
-    initStacks(colStacks, COLORS);
-    activeCmd = cmd_none;
-    score = 0;
+//----------------------------------------------------------------------------
+// Private function prototypes
+//----------------------------------------------------------------------------
 
-    // draw cards from the pack into desk
-    for (int i = 0; i < 7; i++) {
-        for (int j = 0; j <= i; j++) {
-            struct Card card;
-            popStack(&pack, &card);
-            pushStack(&stacks[i], card);
-        }
-        topCard(&stacks[i])->m_down = false;
-    }
-}
-
-
-enum Command getActiveCmd() {
-    return activeCmd;
-}
-
-
-int getScore() {
-    return score;
-}
-
-static void updateScore(int num) {
-    score += num;
-    if (score < MIN_SCORE) {
-        score = MIN_SCORE;
-    }
-}
-
-
-void nextCard() {
-    struct Card card;
-    if (popStack(&pack, &card) != NULL) {
-        topDown(&rest);
-        card.m_down = false;
-        pushStack(&rest, card);
-    } else {
-        while (popStack(&rest, &card) != NULL) {
-            card.m_down = true;
-            pushStack(&pack, card);
-            updateScore(-2);
-        }
-    }
-}
-
-
+/* Update score by given numbers - negative score cannot go below MIN_SCORE */
+static void UpdateScore(int num);
 
 /* Return true if the card can be moved on top of given desk stack. */
-static bool isCardMovableToDesk(struct Card card, struct SolStack *pStack) {
-    if (pStack) {
-        struct Card *pTopCard = topCard(pStack);
-        if (pTopCard) {
-            return (oneLess(card, *pTopCard) && oppositeColor(card, *pTopCard));
-        } else {
-            return (card.m_type == ct_king);
-        }
-    }
-    return false;
-}
+static bool IsCardMovableToDesk(Card_t card, const SolStack_t* stackPtr);
 
 /* Return true if the card can be moved on top of its color stack */
-static bool isCardMovableToColors(struct Card card) {
-    struct SolStack *pTarget = &colStacks[card.m_color];
-    struct Card *pTopCard = topCard(pTarget);
+static bool IsCardMovableToColors(Card_t card);
 
-    if (pTopCard) {
-        return oneLess(*pTopCard, card);
-    } else {
-        return (card.m_type == ct_ace);
-    }
-}
-
-/* Move top of given stack into color stack if possible
+/*
+ * Move top of given stack into color stack if possible
  * Return true on success.
  */
-static bool moveToColors(struct SolStack *pSource) {
-    struct Card *pSrcCard = topCard(pSource);
+static bool MoveToColors(SolStack_t* srcStackPtr);
 
-    if (pSrcCard && isCardMovableToColors(*pSrcCard)) {
-        return moveCard(pSource, &colStacks[pSrcCard->m_color]);
-    }
-
-    return false;
-}
-
-
-/* Move top of given stack into desk stack with given number if possible.
+/*
+ * Move top of given stack into desk stack with given number if possible.
  * Return true on success.
  */
-static bool moveToDesk(struct SolStack *pSource, int stackNum) {
-    struct Card *pSrcCard = topCard(pSource);
-    struct SolStack *pTarget = &stacks[stackNum];
+static bool MoveToDesk(SolStack_t* srcStackPtr, int stackIdx);
 
-    if (pSrcCard && isCardMovableToDesk(*pSrcCard, pTarget)) {
-        return moveCard(pSource, pTarget);
+//----------------------------------------------------------------------------
+// Public function implementation
+//----------------------------------------------------------------------------
+
+void tbl_Init(void)
+{
+  stk_InitFull(&PackStack);
+  stk_InitEmpty(&RestStack);
+  stk_InitEmptyArray(DeskStacks, NUM_STACKS);
+  stk_InitEmptyArray(ColorStacks, NUM_CARD_COLORS);
+  Score = 0;
+
+  // draw cards from the pack into desk
+  for (int i = 0; i < NUM_STACKS; i++) {
+    for (int j = 0; j <= i; j++) {
+      Card_t card;
+      stk_Pop(&PackStack, &card);
+      stk_PushCopy(&DeskStacks[i], card);
     }
-
-    return false;
+    stk_TopCard(&DeskStacks[i])->m_face = CF_UP;
+  }
 }
 
-bool movePackToColors() {
-    if (moveToColors(&rest)) {
-        updateScore(10);
-        return true;
+bool tbl_IsVictory(void)
+{
+  for (ECardColor_t cc = CC_SPADES; cc <= CC_DIAMONDS; cc++) {
+    const Card_t* cardPtr = stk_CTopCard(&ColorStacks[cc]);
+    if (!cardPtr || cardPtr->m_type != CT_KING) {
+      return false;
     }
-    return false;
+  }
+  return true;
 }
 
-bool movePackToDesk(int stackNum) {
-    if (moveToDesk(&rest, stackNum)) {
-        updateScore(5);
-        return true;
+void tbl_DrawNextCard(void)
+{
+  Card_t card;
+  if (stk_Pop(&PackStack, &card)) {
+    stk_TurnTopCardDown(&RestStack);
+    card.m_face = CF_UP;
+    stk_PushCopy(&RestStack, card);
+  } else {
+    while (stk_Pop(&RestStack, &card)) {
+      card.m_face = CF_DOWN;
+      stk_PushCopy(&PackStack, card);
+      UpdateScore(-2);
     }
-    return false;
+  }
 }
 
-bool moveDeskToColors(int stackNum) {
-    if (moveToColors(&stacks[stackNum])) {
-        updateScore(10);
-        return true;
-    }
-    return false;
+bool tbl_MovePackToColors(void)
+{
+  if (MoveToColors(&RestStack)) {
+    UpdateScore(10);
+    return true;
+  }
+  return false;
 }
 
-bool moveColorsToDesk(int srcNum, int tgtNum) {
-    if (moveToDesk(&colStacks[srcNum], tgtNum)) {
-        updateScore(-15);
-        return true;
-    }
-    return false;
+bool tbl_MovePackToDesk(int stackIdx)
+{
+  if (MoveToDesk(&RestStack, stackIdx)) {
+    UpdateScore(5);
+    return true;
+  }
+  return false;
 }
 
-/* Move chain of cards from one desk stack to another if possible.
- * If revealOnly is set to true, it only allows moves that reveal
- * a new card or vacate an empty space.
- * Return true on success.
- */
-static bool moveDeskToDesk3(int srcNum, int tgtNum, bool revealOnly) {
-    struct SolStack *pSource = &stacks[srcNum];
-    struct SolStack *pTarget = &stacks[tgtNum];
-    struct SolStack helpStack;
-    struct Card helpCard;
-    struct Card *pSrcCard = NULL;
-    int i;
+bool tbl_MoveDeskToColors(int stackIdx)
+{
+  if (MoveToColors(&DeskStacks[stackIdx])) {
+    UpdateScore(10);
+    return true;
+  }
+  return false;
+}
 
-    if (revealOnly) {
-        // find the first card facing up in the source column
-        for (i = 0; i < pSource->m_size; i++) {
-            if (!pSource->m_cards[i].m_down) {
-                pSrcCard = &pSource->m_cards[i];
-                // don't move king if there's no card under it
-                if (i == 0 && pSrcCard->m_type == ct_king) {
-                    pSrcCard = NULL;
-                }
-                break;
-            }
-        }
+bool tbl_MoveColorsToDesk(int sourceIdx, int targetIdx)
+{
+  if (MoveToDesk(&ColorStacks[sourceIdx], targetIdx)) {
+    UpdateScore(-15);
+    return true;
+  }
+  return false;
+}
 
-        // verify whether it would fit on target card
-        if (pSrcCard && !isCardMovableToDesk(*pSrcCard, pTarget)) {
-            pSrcCard = NULL;
-        }
+bool tbl_IsRevealingDeskMove(int sourceIdx, int targetIdx)
+{
+  SolStack_t* srcStackPtr = &DeskStacks[sourceIdx];
+  SolStack_t* targetPtr = &DeskStacks[targetIdx];
+  Card_t* srcCardPtr = NULL;
+
+  // find the first card facing up in the source column
+  for (int i = 0; i < srcStackPtr->m_size; i++) {
+    if (srcStackPtr->m_cards[i].m_face == CF_UP) {
+      srcCardPtr = &srcStackPtr->m_cards[i];
+      // don't move king if there's no card under it
+      if (i == 0 && srcCardPtr->m_type == CT_KING) {
+        srcCardPtr = NULL;
+      }
+      break;
+    }
+  }
+
+  // verify whether found card it would fit on target card
+  return (srcCardPtr && IsCardMovableToDesk(*srcCardPtr, targetPtr));
+}
+
+bool tbl_MoveDeskToDesk(int sourceIdx, int targetIdx)
+{
+  SolStack_t* srcStackPtr = &DeskStacks[sourceIdx];
+  SolStack_t* targetPtr = &DeskStacks[targetIdx];
+  SolStack_t helpStack;
+  Card_t helpCard;
+  Card_t* srcCardPtr = NULL;
+  int srcCardIdx;
+
+  // try to find card facing up in the source column that would fit on target
+  // card or empty slot
+  for (srcCardIdx = 0; srcCardIdx < srcStackPtr->m_size; srcCardIdx++) {
+    srcCardPtr = &srcStackPtr->m_cards[srcCardIdx];
+    if (srcCardPtr->m_face == CF_UP &&
+        IsCardMovableToDesk(*srcCardPtr, targetPtr)) {
+      break; // got it
+    }
+    srcCardPtr = NULL;
+  }
+
+  if (!srcCardPtr) {
+    return false;
+  }
+
+  // move cards from one stack to the other
+  stk_InitEmpty(&helpStack);
+
+  while (srcCardIdx < srcStackPtr->m_size) {
+    if (stk_Pop(srcStackPtr, &helpCard)) {
+      stk_PushCopy(&helpStack, helpCard);
+    }
+  }
+
+  while (stk_Pop(&helpStack, &helpCard)) {
+    stk_PushCopy(targetPtr, helpCard);
+  }
+
+  stk_TurnTopCardUp(srcStackPtr);
+
+  return true;
+}
+
+const SolStack_t* tbl_GetPack(void)
+{
+  return &PackStack;
+}
+
+const SolStack_t* tbl_GetRest(void)
+{
+  return &RestStack;
+}
+
+const SolStack_t* tbl_GetColorStacks(void)
+{
+  return ColorStacks;
+}
+
+const SolStack_t* tbl_GetDeskStacks(void)
+{
+  return DeskStacks;
+}
+
+int tbl_GetCurrentScore(void)
+{
+  return Score;
+}
+
+//----------------------------------------------------------------------------
+// Private function implementation
+//----------------------------------------------------------------------------
+
+static void UpdateScore(int num)
+{
+  Score += num;
+  if (Score < MIN_SCORE) {
+    Score = MIN_SCORE;
+  }
+}
+
+static bool IsCardMovableToDesk(Card_t card, const SolStack_t* stackPtr)
+{
+  if (stackPtr) {
+    const Card_t* topCardPtr = stk_CTopCard(stackPtr);
+    if (topCardPtr) {
+      return (card_IsOneLess(card, *topCardPtr) &&
+              card_IsOppositeColor(card, *topCardPtr));
     } else {
-        // try to find card facing up in the source column that would fit on target card
-        for (i = 0; i < pSource->m_size; i++) {
-            pSrcCard = &pSource->m_cards[i];
-            if (!pSrcCard->m_down && isCardMovableToDesk(*pSrcCard, pTarget)) {
-                break;    // got it
-            }
-            pSrcCard = NULL;
-        }
+      return (card.m_type == CT_KING);
     }
-
-    if (!pSrcCard) {
-        return false;
-    }
-
-    // move cards from one stack to the other
-    initStack(&helpStack);
-
-    while (i < pSource->m_size) {
-        if (popStack(pSource, &helpCard)) {
-            pushStack(&helpStack, helpCard);
-        }
-    }
-
-    while (popStack(&helpStack, &helpCard) != NULL) {
-        pushStack(pTarget, helpCard);
-    }
-
-    topUp(pSource);
-
-    return true;
+  }
+  return false;
 }
 
-bool moveDeskToDesk(int srcNum, int tgtNum) {
-    return moveDeskToDesk3(srcNum, tgtNum, false);
+static bool IsCardMovableToColors(Card_t card)
+{
+  SolStack_t* targetPtr = &ColorStacks[card.m_color];
+  const Card_t* topCardPtr = stk_CTopCard(targetPtr);
+
+  if (topCardPtr) {
+    return card_IsOneLess(*topCardPtr, card);
+  } else {
+    return (card.m_type == CT_ACE);
+  }
 }
 
+static bool MoveToColors(SolStack_t* srcStackPtr)
+{
+  const Card_t* srcCardPtr = stk_CTopCard(srcStackPtr);
 
-bool moveAnything() {
-    // try to move cards between desk stacks
-    for (int i = 0; i < STACKS; i++) {
-        for (int j = 0; j < STACKS; j++) {
-            if ((i != j) && moveDeskToDesk3(i, j, true)) {
-                return true;
-            }
-        }
-    }
-    // try to move the pack card to any desk stack
-    for (int i = 0; i < STACKS; i++) {
-        if (movePackToDesk(i)) {
-            return true;
-        }
-    }
-
-    // try to move any desk card to colors
-    for (int i = 0; i < STACKS; i++) {
-        if (moveDeskToColors(i)) {
-            return true;
-        }
-    }
-
-    // try to move the pack card to colors
-    if (movePackToColors()) {
-        return true;
-    }
-
-    #ifdef TURBO
-    // if everything else fails, draw next card
-    nextCard();
-    return true;
-    #else
-    return false;
-    #endif
+  if (srcCardPtr && IsCardMovableToColors(*srcCardPtr)) {
+    return stk_MoveCardFromTo(srcStackPtr, &ColorStacks[srcCardPtr->m_color]);
+  }
+  return false;
 }
 
-bool isVictory() {
-    for (enum CardColor cc = cc_spades; cc <= cc_diamonds; cc++) {
-        struct Card *pCard = topCard(&colStacks[cc]);
-        if (!pCard || pCard->m_type != ct_king) {
-            return false;
-        }
-    }
-    return true;
-}
+static bool MoveToDesk(SolStack_t* srcStackPtr, int stackIdx)
+{
+  const Card_t* srcCardPtr = stk_CTopCard(srcStackPtr);
+  SolStack_t* targetPtr = &DeskStacks[stackIdx];
 
-
-bool controlTable(enum Command cmd) {
-    bool rv = true;
-
-    if (activeCmd == cmd_none) {
-        if (cmd == cmd_next) {
-            nextCard();
-        } else if (cmd == cmd_pack || isCmdDesk(cmd) || isCmdColor(cmd)) {
-            // want one more key to complete action
-            activeCmd = cmd;
-        } else if (cmd == cmd_lazy) {
-            rv = moveAnything();
-        } else {
-            return false;
-        }
-
-    } else {
-        rv = false;
-
-        if (isCmdColor(cmd) || cmd == activeCmd) {
-            // move up or cancel action
-            if (cmd_pack == activeCmd) {
-                rv = movePackToColors();
-            } else if (isCmdDesk(activeCmd)) {
-                rv = moveDeskToColors(activeCmd - cmd_desk0);
-            } else {
-                rv = false;
-            }
-            rv = rv || activeCmd == cmd;
-
-        } else if (isCmdDesk(cmd)) {
-            // move to desk
-            if (cmd_pack == activeCmd) {
-                rv = movePackToDesk(cmd-cmd_desk0);
-            } else if (isCmdDesk(activeCmd)) {
-                rv = moveDeskToDesk(activeCmd - cmd_desk0, cmd - cmd_desk0);
-            } else if (isCmdColor(activeCmd)) {
-                rv = moveColorsToDesk(activeCmd - cmd_color0, cmd - cmd_desk0);
-            }
-        } else if (cmd_pack == cmd) {
-            rv = false;
-        } else {
-            // unknown key
-            activeCmd = cmd_none;
-            return false;
-        }
-
-        activeCmd = cmd_none;
-    }
-
-    if (!rv) {
-        setMessage("!! Invalid move");
-    }
-    return true;
-}
-
-
-struct SolStack * getPack() {
-    return &pack;
-}
-
-struct SolStack * getRest() {
-    return &rest;
-}
-
-struct SolStack * getColStacks() {
-    return colStacks;
-}
-
-struct SolStack * getDeskStacks() {
-    return stacks;
+  if (srcCardPtr && IsCardMovableToDesk(*srcCardPtr, targetPtr)) {
+    return stk_MoveCardFromTo(srcStackPtr, targetPtr);
+  }
+  return false;
 }

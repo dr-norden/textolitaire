@@ -1,73 +1,75 @@
 #ifndef __TABLE_H__
 #define __TABLE_H__
 
-#include <stdbool.h>
-#include "solstack.h"
 #include "controls.h"
+#include "solstack.h"
+#include <stdbool.h>
 
-#define CARDS 52
-#define STACKS 7
-#define COLORS 4
+#define NUM_STACKS 7
 
 /* Setup table for new game */
-void initTable();
+void tbl_Init(void);
 
-/* Return true, if there's a winning combination on the table,
+/*
+ * Return true, if there's a winning combination on the table,
  * i.e. if there's a king on top of each color stack.
  */
-bool isVictory();
-
-/* Change table properties based on the command from the keyboard.
- * Return true if an action has been taken.
- */
-bool controlTable(enum Command cmd);
-
-/* Return table command that's waiting for completion */
-enum Command getActiveCmd();
+bool tbl_IsVictory(void);
 
 /* Draw next card from the pack */
-void nextCard();
+void tbl_DrawNextCard(void);
 
-/* Move top of the pack into color stack if possible.
+/*
+ * Move top of the pack into color stack if possible.
  * Return true on success.
  */
-bool movePackToColors();
+bool tbl_MovePackToColors(void);
 
-/* Move top of the pack into given desk stack if possible.
+/*
+ * Move top of the pack into given desk stack if possible.
  * Return true on success.
  */
-bool movePackToDesk(int stackNum);
+bool tbl_MovePackToDesk(int stackIdx);
 
-/* Move top of given desk stack into color stack if possible.
+/*
+ * Move top of given desk stack into color stack if possible.
  * Return true on success.
  */
-bool moveDeskToColors(int stackNum);
+bool tbl_MoveDeskToColors(int stackIdx);
 
-/* Move top of given color stack into given desk stack if possible.
+/*
+ * Move top of given color stack into given desk stack if possible.
  * Return true on success.
  */
-bool moveColorsToDesk(int srcNum, int tgtNum);
+bool tbl_MoveColorsToDesk(int sourceIdx, int targetIdx);
 
-/* Move chain of cards from one desk stack to another if possible.
+/*
+ * Move chain of cards from one desk stack to another if possible.
  * Return true on success.
  */
-bool moveDeskToDesk(int srcNum, int tgtNum);
+bool tbl_MoveDeskToDesk(int sourceIdx, int targetIdx);
 
+/*
+ * Return true if given desk-to-desk move move would reveal
+ * a new card or vacate an empty space. The latter does not
+ * apply for stack with a king on top, as the move would
+ * just mean trading one empty space for another.
+ */
+bool tbl_IsRevealingDeskMove(int sourceIdx, int targetIdx);
 
 /* Return the unrevealed pack */
-struct SolStack * getPack();
+const SolStack_t* tbl_GetPack(void);
 
 /* Return the revealed pack */
-struct SolStack * getRest();
+const SolStack_t* tbl_GetRest(void);
 
 /* Return the array of color stacks */
-struct SolStack * getColStacks();
+const SolStack_t* tbl_GetColorStacks(void);
 
 /* Return the array of desk stacks */
-struct SolStack * getDeskStacks();
+const SolStack_t* tbl_GetDeskStacks(void);
 
 /* Return game score */
-int getScore();
-
+int tbl_GetCurrentScore(void);
 
 #endif
