@@ -9,8 +9,7 @@ build:: config
 clean::
 	cmake --build build --target clean
 
-run:: run1
-	run1
+run:: run2
 
 run1:: config
 	cmake --build build --target run1
