@@ -1,4 +1,5 @@
 #include "diskdata.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,13 +13,19 @@
 
 #define RET_OK 0
 
-static int HighScore = 0;
-static int ColorSchemeIdx = 0;
-static int ColorScheme2Idx = 0;
+typedef struct
+{
+  int m_highScore;
+  int m_colorScheme1;
+  int m_colorScheme2;
+} DiskData_t;
+
+static DiskData_t StoredData = { 0 };
+static DiskData_t ActiveData = { 0 };
 static const char* SubDirName = ".textolitaire";
 static const char* FileName = "data.txt";
 static const char* HighScoreLabel = "hiscore:";
-static const char* ColorSchemeIdxLabel = "colorschemeidx:";
+static const char* ColorScheme1IdxLabel = "colorschemeidx:";
 static const char* ColorScheme2IdxLabel = "colorscheme2idx:";
 
 //----------------------------------------------------------------------------
@@ -26,6 +33,7 @@ static const char* ColorScheme2IdxLabel = "colorscheme2idx:";
 //----------------------------------------------------------------------------
 
 static FILE* OpenDataFile(const char* mode);
+static bool IsDataModified(void);
 
 //----------------------------------------------------------------------------
 // Public function implementation
@@ -39,57 +47,60 @@ void dd_Init(void)
 
   if (fp) {
     while (fscanf(fp, "%s%d", buffer, &number) != EOF) {
-      // printf("string: '%s', number: '%d'\n", buffer, number);
       if (strcmp(buffer, HighScoreLabel) == RET_OK) {
-        HighScore = number;
-      } else if (strcmp(buffer, ColorSchemeIdxLabel) == RET_OK) {
-        ColorSchemeIdx = number;
+        StoredData.m_highScore = number;
+      } else if (strcmp(buffer, ColorScheme1IdxLabel) == RET_OK) {
+        StoredData.m_colorScheme1 = number;
       } else if (strcmp(buffer, ColorScheme2IdxLabel) == RET_OK) {
-        ColorScheme2Idx = number;
+        StoredData.m_colorScheme2 = number;
       }
     }
+    ActiveData = StoredData;
   }
 }
 
 void dd_Save(void)
 {
-  FILE* fp = OpenDataFile("w");
-  if (fp) {
-    fprintf(fp, "%s %d\n", HighScoreLabel, HighScore);
-    fprintf(fp, "%s %d\n", ColorSchemeIdxLabel, ColorSchemeIdx);
-    fprintf(fp, "%s %d\n", ColorScheme2IdxLabel, ColorScheme2Idx);
-    fclose(fp);
+  if (IsDataModified()) {
+    FILE* fp = OpenDataFile("w");
+    if (fp) {
+      fprintf(fp, "%s %d\n", HighScoreLabel, ActiveData.m_highScore);
+      fprintf(fp, "%s %d\n", ColorScheme1IdxLabel, ActiveData.m_colorScheme1);
+      fprintf(fp, "%s %d\n", ColorScheme2IdxLabel, ActiveData.m_colorScheme2);
+      fclose(fp);
+      StoredData = ActiveData;
+    }
   }
 }
 
 int dd_GetHighScore(void)
 {
-  return HighScore;
+  return ActiveData.m_highScore;
 }
 
 void dd_SetHighScore(int score)
 {
-  HighScore = score;
+  ActiveData.m_highScore = score;
 }
 
 int dd_GetColorSchemeIdx(void)
 {
-  return ColorSchemeIdx;
+  return ActiveData.m_colorScheme1;
 }
 
 void dd_SetColorSchemeIdx(int index)
 {
-  ColorSchemeIdx = index;
+  ActiveData.m_colorScheme1 = index;
 }
 
 int dd_GetColorScheme2Idx(void)
 {
-  return ColorScheme2Idx;
+  return ActiveData.m_colorScheme2;
 }
 
 void dd_SetColorScheme2Idx(int index)
 {
-  ColorScheme2Idx = index;
+  ActiveData.m_colorScheme2 = index;
 }
 
 //----------------------------------------------------------------------------
@@ -117,4 +128,11 @@ static FILE* OpenDataFile(const char* mode)
   }
 
   return NULL;
+}
+
+static bool IsDataModified(void)
+{
+  return (ActiveData.m_highScore != StoredData.m_highScore) ||
+         (ActiveData.m_colorScheme1 != StoredData.m_colorScheme1) ||
+         (ActiveData.m_colorScheme2 != StoredData.m_colorScheme2);
 }
