@@ -346,7 +346,7 @@ static void DisplayHelp(void)
   wbkgd(helpWin, COLOR_PAIR(5));
   wattron(helpWin, COLOR_PAIR(5));
 
-  mvwprintw(helpWin, 1, 0, ctrl_GetHelp());
+  mvwprintw(helpWin, 1, 0, "%s", ctrl_GetHelp());
   DrawRectangleInWindow(helpWin, 0, 0, HELP_WIN_WIDTH - 1, HELP_WIN_HEIGHT - 1);
 
   wattroff(helpWin, COLOR_PAIR(5));
@@ -360,7 +360,7 @@ static void DrawLabel(const char* label, int x, int y)
 
   attron(COLOR_PAIR(CP_LABEL));
 
-  mvwprintw(stdscr, y + 1, x + 2, label);
+  mvwprintw(stdscr, y + 1, x + 2, "%s", label);
   mvwaddch(stdscr, y + 1, x + 1, ' ');
   mvwaddch(stdscr, y + 1, x + llen - 1, ' ');
   DrawRectangle(x, y, llen, 2);
@@ -481,7 +481,7 @@ static void DrawCardArt(const char artData[],
   for (int i = 0; i < width; i++) {
     switch (artData[i]) {
       case 'B': mvwprintw(stdscr, y, x + i, "▒"); break;
-      case 'C': mvwprintw(stdscr, y, x + i, ColorSymbols[cardColor]); break;
+      case 'C': mvwprintw(stdscr, y, x + i, "%s", ColorSymbols[cardColor]); break;
       default: mvwprintw(stdscr, y, x + i, "%c", artData[i]); break;
     }
   }
