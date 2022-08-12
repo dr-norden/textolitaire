@@ -164,7 +164,7 @@ static bool ControlTable(ECommand_t cmd)
       } else if (IsCmdDesk(ActiveCmd)) {
         rv = tbl_MoveDeskToDesk(GetStackIdx(ActiveCmd), GetStackIdx(cmd));
       } else if (IsCmdColor(ActiveCmd)) {
-        rv = tbl_MoveColorsToDesk(GetStackIdx(cmd), GetStackIdx(cmd));
+        rv = tbl_MoveColorsToDesk(GetStackIdx(ActiveCmd), GetStackIdx(cmd));
       }
     } else if (CMD_PACK == cmd) {
       rv = false;
